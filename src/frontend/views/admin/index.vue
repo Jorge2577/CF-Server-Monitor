@@ -14,9 +14,7 @@
       :turnstile-login-enabled="turnstileLoginEnabled"
       :turnstile-enabled="turnstileEnabled"
       :turnstile-verified="turnstileVerified"
-      :github-o-auth-enabled="githubOAuthEnabled"
       @login="handleLogin"
-      @github-login="handleGithubLogin"
       @toggle-password="togglePassword"
       @api-index-change="handleApiIndexChange"
     />
@@ -99,11 +97,6 @@
             :class="{ active: activeTab === 'themeStore' }"
             @click="activeTab = 'themeStore'"
           >{{ trans.themeStore }}</button>
-          <button
-            class="tab-btn"
-            :class="{ active: activeTab === 'donation' }"
-            @click="activeTab = 'donation'"
-          >{{ trans.donation }}</button>
         </div>
 
         <ServerTable
@@ -148,7 +141,6 @@
           :change-admin-password="changeAdminPassword"
           :test-notification-loading="testNotificationLoading"
           :d1-usage-loading="d1UsageLoading"
-          :github-binding-loading="githubBindingLoading"
           @toggle-password="togglePassword"
           @toggle-admin-password-change="toggleAdminPasswordChange"
           @save-settings="saveSettings"
@@ -157,8 +149,6 @@
           @upload-favicon="uploadFavicon"
           @send-test-notification="sendTestNotification"
           @query-d1-usage="queryD1Usage"
-          @bind-github-account="bindGithubAccount"
-          @alert-message="alertMessage = $event"
         />
 
         <DatabasePanel
@@ -180,10 +170,6 @@
           @alert-message="alertMessage = $event"
         />
 
-        <DonationPanel
-          :trans="trans"
-          :active-tab="activeTab"
-        />
       </div>
 
       <EditServerModal
@@ -586,14 +572,12 @@ import ServerTable from './components/ServerTable.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 import DatabasePanel from './components/DatabasePanel.vue'
 import ThemeStorePanel from './components/ThemeStorePanel.vue'
-import DonationPanel from './components/DonationPanel.vue'
 import EditServerModal from './components/EditServerModal.vue'
 import BatchEditServersModal from './components/BatchEditServersModal.vue'
 import DeleteServerModal from './components/DeleteServerModal.vue'
 import CopyCommandModal from './components/CopyCommandModal.vue'
-import { adminApi, login, startGithubLogin, logout as apiLogout, upgradeDatabase, clearHistory, getApiBases, fetchConfig } from '../../utils/api'
+import { adminApi, login, logout as apiLogout, upgradeDatabase, clearHistory, getApiBases, fetchConfig } from '../../utils/api'
 import { hasMultipleApiBases } from '../../utils/config.js'
-import { copyTextToClipboard } from '../../utils/clipboard.js'
 import { t, useTranslation } from '../../utils/i18n'
 import { PING_NODE_FIELDS, validatePingNode } from '../../utils/pingNode.js'
 import { normalizeDisplayMode, resolveDisplayMode } from '../../utils/displayMode.js'
@@ -659,21 +643,21 @@ const normalizeTgNotifySetting = (value) => {
   if (value === false || value === 'false' || value === undefined || value === null || value === '') return '0'
 
   const minutes = Number(value)
-  if (!Number.isInteger(minutes) || minutes < 0 || minutes > 30) return '0'
-  if (minutes === 0) return '0'
-  // 最小 5 分钟：低于 5 的历史值（如 2、3、4）统一提升到 5
-  return String(Math.max(minutes, 5))
+  if (Number.isInteger(minutes) && (minutes === 0 || (minutes >= 2 && minutes <= 30))) {
+    return String(minutes)
+  }
+
+  return '0'
 }
 
 const isTgNotifyEnabled = (value) => normalizeTgNotifySetting(value) !== '0'
 
-const EXPIRE_REMINDER_DAYS_MAX = 365
 const normalizeExpireReminderSetting = (value) => {
   if (value === true || value === 'true') return '7'
   if (value === false || value === 'false' || value === undefined || value === null || value === '') return '0'
 
   const days = Number(value)
-  if (Number.isInteger(days) && days >= 0 && days <= EXPIRE_REMINDER_DAYS_MAX) {
+  if (Number.isInteger(days) && days >= 0 && days <= 7) {
     return String(days)
   }
 
@@ -945,11 +929,11 @@ const settings = ref({
   tg_notify: '0',
   expire_reminder: '0',
   resource_alert_rules: [],
-  traffic_alert_threshold: 0,
   tg_bot_token: '',
   tg_chat_id: '',
   notification_timezone: 'UTC',
   expire_notification_time: '12',
+  traffic_report_enabled: false,
   notification_webhook_enabled: false,
   notification_webhook_url: '',
   notification_webhook_method: 'POST',
@@ -958,19 +942,12 @@ const settings = ref({
   notification_webhook_body: '{\n  "title": "{{emoji}} {{event}}",\n  "content": "{{notification}}"\n}',
   notification_template: '{{emoji}}【CF Server Monitor】{{event}}\n\n{{message}}\n\n{{time}}',
   turnstile_enabled: false,
-  turnstile_login_enabled: false,
   turnstile_site_key: '',
   turnstile_secret_key: '',
-  github_oauth_enabled: false,
-  github_client_id: '',
-  github_client_secret: '',
-  github_client_secret_configured: false,
-  github_user_id: '',
   cloudflare_account_id: '',
   cloudflare_token: '',
   jwt_secret: '',
   username: '',
-  password_configured: false,
   password: '',
   confirm_password: '',
   custom_ct: '',
@@ -1007,12 +984,12 @@ const toggleAdminPasswordChange = () => {
 }
 
 const { visibility: passwordVisible, toggle: togglePassword } = usePasswordVisibility([
-  'login', 'tgBotToken', 'tgChatId', 'notificationWebhookUrl', 'smtpPassword', 'turnstileSecret', 'githubClientSecret', 'cloudflareToken', 'jwtSecret', 'password', 'confirmPassword'
+  'login', 'tgBotToken', 'tgChatId', 'notificationWebhookUrl', 'turnstileSecret', 'cloudflareToken', 'jwtSecret', 'password', 'confirmPassword'
 ])
 
 const {
   turnstileEnabled, turnstileLoginEnabled, turnstileSiteKey,
-  turnstileToken, turnstileVerified, githubOAuthEnabled,
+  turnstileToken, turnstileVerified,
   hasSharedTurnstileVerified, loadTurnstileConfig: loadTurnstileConfigBase,
   renderTurnstile, resetTurnstile, clearTurnstile
 } = useTurnstile()
@@ -1034,7 +1011,6 @@ const editForm = ref({
   expire_date: '',
   traffic_limit: '',
   traffic_calc_type: 'total',
-  traffic_alert_percent: null,
   interface: '',
   reset_day: 1,
   collect_interval: 0,
@@ -1065,7 +1041,6 @@ const createBatchEditDefaults = () => ({
   expire_date: '',
   traffic_limit: '',
   traffic_calc_type: 'total',
-  traffic_alert_percent: null,
   interface: '',
   reset_day: 1,
   collect_interval: 0,
@@ -1108,7 +1083,6 @@ const dbLoading = ref(false)
 const dbResult = ref(null)
 const d1UsageLoading = ref(false)
 const d1UsageResult = ref(null)
-const githubBindingLoading = ref(false)
 const validationError = ref(null)
 const alertMessage = ref(null)
 const showAutoUpdateWarning = ref(false)
@@ -1185,16 +1159,33 @@ const getPingNodeValidation = (source) => {
 
 const buildPingNodeError = (field) => `${getPingNodeLabel(field)}: ${trans.value.invalidPingNodeFormat}`
 
+const copyTextToClipboard = async (text) => {
+  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text)
+      return
+    } catch (e) {
+      // Fall back to the textarea path below.
+    }
+  }
+
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.setAttribute('readonly', '')
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  textarea.select()
+  document.execCommand('copy')
+  document.body.removeChild(textarea)
+}
+
 const copyServerNote = async (server) => {
   const note = String(server?.note || '')
   if (!note.trim()) return
 
   try {
-    const copied = await copyTextToClipboard(note)
-    if (!copied) {
-      alertMessage.value = trans.value.httpsRequired
-      return
-    }
+    await copyTextToClipboard(note)
     copiedNoteServerId.value = server.id
     setTimeout(() => {
       if (copiedNoteServerId.value === server.id) {
@@ -1211,11 +1202,7 @@ const copyServerSpec = async ({ key, text } = {}) => {
   if (!key || !value || value === '-') return
 
   try {
-    const copied = await copyTextToClipboard(value)
-    if (!copied) {
-      alertMessage.value = trans.value.httpsRequired
-      return
-    }
+    await copyTextToClipboard(value)
     copiedSpecKey.value = key
     setTimeout(() => {
       if (copiedSpecKey.value === key) {
@@ -1263,34 +1250,6 @@ const handleLogin = async () => {
   loginLoading.value = false
 }
 
-const handleGithubLogin = async () => {
-  loginError.value = ''
-  if ((turnstileLoginEnabled.value || turnstileEnabled.value) && !turnstileToken.value) {
-    loginError.value = 'Please complete the verification'
-    return
-  }
-
-  loginLoading.value = true
-  try {
-    const result = await startGithubLogin(selectedApiIndex.value)
-    if (!result.error && result.data?.authorize_url) {
-      window.location.assign(result.data.authorize_url)
-      return
-    }
-    loginError.value = result.status === 403
-      ? 'Please complete the verification'
-      : trans.value.githubOAuthFailed
-    if (result.status === 403) {
-      clearTurnstile()
-      resetTurnstile('#admin-turnstile-container')
-    }
-  } catch (_) {
-    loginError.value = trans.value.githubOAuthFailed
-  } finally {
-    loginLoading.value = false
-  }
-}
-
 const logout = async () => {
   try {
     await adminApiForSite({ action: 'logout' })
@@ -1306,33 +1265,7 @@ const logout = async () => {
 
 const checkLoginStatus = () => {
   const token = localStorage.getItem('jwt_token')
-  return !!token || appConfig?.authorization === true
-}
-
-const getGithubLoginError = () => {
-  const error = String(route.query.github_error || '')
-  if (!error) return ''
-  const messages = {
-    not_configured: trans.value.githubOAuthNotConfigured,
-    not_bound: trans.value.githubOAuthNotBound,
-    binding_auth_required: trans.value.githubBindingAuthRequired,
-    invalid_state: trans.value.githubOAuthInvalidState,
-    cancelled: trans.value.githubOAuthCancelled,
-    missing_code: trans.value.githubOAuthFailed,
-    token_exchange_failed: trans.value.githubOAuthFailed,
-    user_lookup_failed: trans.value.githubOAuthFailed,
-    not_allowed: trans.value.githubOAuthNotAllowed,
-    request_failed: trans.value.githubOAuthFailed
-  }
-  return messages[error] || trans.value.githubOAuthFailed
-}
-
-const clearGithubOAuthQuery = () => {
-  if (!route.query.github_bound && !route.query.github_error) return
-  const query = { ...route.query }
-  delete query.github_bound
-  delete query.github_error
-  router.replace({ path: '/admin', query })
+  return !!token
 }
 
 const initAdmin = async () => {
@@ -1349,18 +1282,8 @@ const initAdmin = async () => {
       loadServers(),
       loadLatestAgentVersion()
     ])
-    if (route.query.github_bound === '1') {
-      activeTab.value = 'settings'
-      saveResult.value = { success: true, message: trans.value.githubBindingSuccess }
-    } else if (route.query.github_error) {
-      activeTab.value = 'settings'
-      saveResult.value = { success: false, error: getGithubLoginError() }
-    }
-    clearGithubOAuthQuery()
   } else {
     await loadTurnstileConfig()
-    loginError.value = getGithubLoginError()
-    clearGithubOAuthQuery()
   }
 }
 
@@ -1456,11 +1379,11 @@ const loadSettings = async () => {
         tg_notify: normalizeTgNotifySetting(settingsData.tg_notify),
         expire_reminder: normalizeExpireReminderSetting(settingsData.expire_reminder),
         resource_alert_rules: normalizeResourceAlertRulesSetting(settingsData.resource_alert_rules),
-        traffic_alert_threshold: Number(settingsData.traffic_alert_threshold) || 0,
         tg_bot_token: settingsData.tg_bot_token || '',
         tg_chat_id: settingsData.tg_chat_id || '',
         notification_timezone: normalizeNotificationTimezoneSetting(settingsData.notification_timezone),
         expire_notification_time: normalizeExpireNotificationTimeSetting(settingsData.expire_notification_time),
+        traffic_report_enabled: settingsData.traffic_report_enabled === 'true' || settingsData.traffic_report_enabled === true,
         notification_webhook_enabled: settingsData.notification_webhook_enabled === 'true' || settingsData.notification_webhook_enabled === true,
         notification_webhook_url: settingsData.notification_webhook_url || '',
         notification_webhook_method: String(settingsData.notification_webhook_method || 'POST').toUpperCase() === 'GET' ? 'GET' : 'POST',
@@ -1472,16 +1395,10 @@ const loadSettings = async () => {
         turnstile_login_enabled: settingsData.turnstile_login_enabled === 'true',
         turnstile_site_key: settingsData.turnstile_site_key || '',
         turnstile_secret_key: settingsData.turnstile_secret_key || '',
-        github_oauth_enabled: settingsData.github_oauth_enabled === 'true' || settingsData.github_oauth_enabled === true,
-        github_client_id: settingsData.github_client_id || '',
-        github_client_secret: '',
-        github_client_secret_configured: settingsData.github_client_secret_configured === true,
-        github_user_id: settingsData.github_user_id || '',
         cloudflare_account_id: settingsData.cloudflare_account_id || '',
         cloudflare_token: settingsData.cloudflare_token || '',
         jwt_secret: '',
         username: settingsData.username || '',
-        password_configured: settingsData.password_configured === true,
         password: '',
         confirm_password: '',
         custom_ct: settingsData.custom_ct || '',
@@ -1499,7 +1416,7 @@ const loadSettings = async () => {
         csp_api: settingsData.csp_api || ''
       }
       applyMikusThemeOptions(settingsData.theme_options)
-      changeAdminPassword.value = !settings.value.password_configured || !String(settings.value.username || '').trim()
+      changeAdminPassword.value = !String(settings.value.username || '').trim()
       apiSecret.value = data.api_secret || ''
     }
   } catch (e) {
@@ -1558,21 +1475,10 @@ const saveSettings = async () => {
     return
   }
 
-  if (normalizeExpireReminderSetting(settings.value.expire_reminder) !== String(settings.value.expire_reminder)) {
-    validationError.value = trans.value.invalidExpireReminder || `Expiration reminder must be an integer from 0 to ${EXPIRE_REMINDER_DAYS_MAX} days`
-    return
-  }
-
   const shouldChangePassword = changeAdminPassword.value && (
     settings.value.password.length > 0 ||
     settings.value.confirm_password.length > 0
   )
-
-  if (!settings.value.password_configured && !shouldChangePassword) {
-    changeAdminPassword.value = true
-    validationError.value = trans.value.passwordRequired
-    return
-  }
 
   if (shouldChangePassword) {
     if (settings.value.password !== settings.value.confirm_password) {
@@ -1592,18 +1498,8 @@ const saveSettings = async () => {
     }
   }
 
-  if (settings.value.github_oauth_enabled) {
-    if (!String(settings.value.github_client_id || '').trim()) {
-      validationError.value = trans.value.githubClientIdRequired
-      return
-    }
-    if (!settings.value.github_client_secret_configured && !String(settings.value.github_client_secret || '').trim()) {
-      validationError.value = trans.value.githubClientSecretRequired
-      return
-    }
-  }
-
-  if (isTgNotifyEnabled(settings.value.tg_notify) || isExpireReminderEnabled(settings.value.expire_reminder) || isResourceAlertEnabled(settings.value.resource_alert_rules)) {
+  const isTrafficReportEnabled = settings.value.traffic_report_enabled
+  if (isTgNotifyEnabled(settings.value.tg_notify) || isExpireReminderEnabled(settings.value.expire_reminder) || isResourceAlertEnabled(settings.value.resource_alert_rules) || isTrafficReportEnabled) {
     if (isNotificationWebhookEnabled()) {
       if (!settings.value.notification_webhook_url || settings.value.notification_webhook_url.trim().length === 0) {
         validationError.value = trans.value.notificationWebhookUrlRequired || 'Webhook URL is required'
@@ -1631,10 +1527,6 @@ const saveSettings = async () => {
     const cspStaticValid = settingsPanelRef.value.validateCspField('csp_static')
     const cspApiValid = settingsPanelRef.value.validateCspField('csp_api')
     if (!cspStaticValid || !cspApiValid) {
-      return
-    }
-    if (!settingsPanelRef.value.validateSmtpFields()) {
-      validationError.value = trans.value.smtpConfigInvalid || 'SMTP configuration is incomplete, please check the SMTP settings'
       return
     }
   }
@@ -1669,11 +1561,11 @@ const saveSettings = async () => {
       tg_notify: normalizeTgNotifySetting(settings.value.tg_notify),
       expire_reminder: normalizeExpireReminderSetting(settings.value.expire_reminder),
       resource_alert_rules: normalizeResourceAlertRulesSetting(settings.value.resource_alert_rules),
-      traffic_alert_threshold: String(Math.max(0, Math.min(100, Number(settings.value.traffic_alert_threshold) || 0))),
       tg_bot_token: settings.value.tg_bot_token,
       tg_chat_id: settings.value.tg_chat_id,
       notification_timezone: normalizeNotificationTimezoneSetting(settings.value.notification_timezone),
       expire_notification_time: normalizeExpireNotificationTimeSetting(settings.value.expire_notification_time),
+      traffic_report_enabled: settings.value.traffic_report_enabled ? 'true' : 'false',
       notification_webhook_enabled: settings.value.notification_webhook_enabled ? 'true' : 'false',
       notification_webhook_url: settings.value.notification_webhook_url,
       notification_webhook_method: settings.value.notification_webhook_method === 'GET' ? 'GET' : 'POST',
@@ -1685,8 +1577,6 @@ const saveSettings = async () => {
       turnstile_login_enabled: settings.value.turnstile_login_enabled ? 'true' : 'false',
       turnstile_site_key: settings.value.turnstile_site_key,
       turnstile_secret_key: settings.value.turnstile_secret_key,
-      github_oauth_enabled: settings.value.github_oauth_enabled ? 'true' : 'false',
-      github_client_id: settings.value.github_client_id,
       cloudflare_account_id: settings.value.cloudflare_account_id,
       cloudflare_token: settings.value.cloudflare_token,
       username: settings.value.username,
@@ -1713,11 +1603,6 @@ const saveSettings = async () => {
     data.settings.jwt_secret = jwtSecret
   }
 
-  const githubClientSecret = String(settings.value.github_client_secret || '').trim()
-  if (githubClientSecret) {
-    data.settings.github_client_secret = githubClientSecret
-  }
-
   try {
     const result = await adminApiForSite(data)
     if (!result.error) {
@@ -1726,7 +1611,6 @@ const saveSettings = async () => {
       clearAdminPasswordInputs()
       changeAdminPassword.value = false
       settings.value.jwt_secret = ''
-      settings.value.github_client_secret = ''
       loadSettings()
     } else {
       saveResult.value = { success: false, error: getMessage(result.error) || 'fail' }
@@ -1735,28 +1619,6 @@ const saveSettings = async () => {
     saveResult.value = { success: false, error: e.message }
   } finally {
     saving.value = false
-  }
-}
-
-
-const bindGithubAccount = async () => {
-  if (githubBindingLoading.value) return
-  githubBindingLoading.value = true
-  saveResult.value = null
-  try {
-    const result = await startGithubLogin(selectedApiIndex.value, 'bind')
-    if (!result.error && result.data?.authorize_url) {
-      window.location.assign(result.data.authorize_url)
-      return
-    }
-    saveResult.value = {
-      success: false,
-      error: getMessage(result.error) || trans.value.githubOAuthFailed
-    }
-  } catch (e) {
-    saveResult.value = { success: false, error: e.message || trans.value.githubOAuthFailed }
-  } finally {
-    githubBindingLoading.value = false
   }
 }
 
@@ -1994,16 +1856,6 @@ const getCustomInstallCommand = () => {
     const ghUrl = buildGhRawUrl(proxy, '/huilang-me/cfsm-agent/main/install.ps1')
     return `$script = "$env:TEMP\\install-cf-probe.ps1"; Invoke-WebRequest -Uri ${quotePowerShellArg(ghUrl)} -OutFile $script -UseBasicParsing; PowerShell -ExecutionPolicy Bypass -File $script ${params.join(' ')}`
   }
-  if (targetOs.value === 'docker') {
-    const safeTag = /^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$/.test(version) ? version : 'latest'
-    const image = `ghcr.io/huilang-me/cfsm-agent:${safeTag}`
-    return [
-      'docker run -d --name cf-probe --restart=unless-stopped --network=host \\',
-      '  -v cf-probe-data:/data \\',
-      `  -e SERVER_ID=${quotePosixShellArg(copyServerId.value)} -e SECRET=${quotePosixShellArg(apiSecret.value)} -e WORKER_URL=${quotePosixShellArg(`${HOST}/update`)} \\`,
-      `  ${image}`
-    ].join('\n')
-  }
   const params = ['install']
   if (proxy) params.push(quotePosixShellArg(`--install-ghproxy=${proxy}`))
   if (version) params.push(quotePosixShellArg(`--install-version=${version}`))
@@ -2034,11 +1886,15 @@ const getCustomInstallCommand = () => {
 }
 
 const copyCustomCmd = async () => {
-  const cmd = getCustomInstallCommand()
-  const copied = await copyTextToClipboard(cmd)
-  if (!copied) {
+  if (window.location.protocol !== 'https:') {
     alertMessage.value = trans.value.httpsRequired
     return
+  }
+  const cmd = getCustomInstallCommand()
+  try {
+    await navigator.clipboard.writeText(cmd)
+  } catch (e) {
+    document.execCommand('copy')
   }
 
   copiedCmd.value = true
@@ -2061,24 +1917,16 @@ const openEditModalFromCopy = () => {
 
 const copyUninstallCmd = async () => {
   const cmd = getUninstallCommand()
-  const copied = await copyTextToClipboard(cmd)
-  if (!copied) {
-    alertMessage.value = trans.value.httpsRequired
-    return
+  try {
+    await navigator.clipboard.writeText(cmd)
+  } catch (e) {
+    document.execCommand('copy')
   }
 
   uninstallCopied.value = true
   setTimeout(() => {
     uninstallCopied.value = false
   }, 1500)
-}
-
-// 逐台月流量告警阈值：空/未设置 → null（跟随全局）；否则夹取 0..100 整数（0 = 该服务器显式关闭）
-const normalizeTrafficAlertPercentField = (value) => {
-  if (value === '' || value === null || value === undefined) return null
-  const n = parseInt(value, 10)
-  if (!Number.isFinite(n)) return null
-  return Math.max(0, Math.min(100, n))
 }
 
 const createEditFormFromServer = (server) => ({
@@ -2095,7 +1943,6 @@ const createEditFormFromServer = (server) => ({
     expire_date: server.expire_date || '',
     traffic_limit: server.traffic_limit || '',
     traffic_calc_type: server.traffic_calc_type || 'total',
-    traffic_alert_percent: server.traffic_alert_percent ?? '',
     interface: server.interface || '',
     reset_day: server.reset_day ?? 1,
     collect_interval: server.collect_interval ?? 0,
@@ -2181,7 +2028,6 @@ const buildEditPayloadFromForm = (form) => {
       expire_date: normalizedExpireDate,
       traffic_limit: form.traffic_limit,
       traffic_calc_type: form.traffic_calc_type,
-      traffic_alert_percent: normalizeTrafficAlertPercentField(form.traffic_alert_percent),
       interface: form.interface,
       reset_day: form.reset_day,
       collect_interval: form.collect_interval,
@@ -2248,7 +2094,6 @@ const saveEdit = async () => {
     expire_date: normalizedExpireDate,
     traffic_limit: editForm.value.traffic_limit,
     traffic_calc_type: editForm.value.traffic_calc_type,
-    traffic_alert_percent: normalizeTrafficAlertPercentField(editForm.value.traffic_alert_percent),
     interface: editForm.value.interface,
     reset_day: editForm.value.reset_day,
     collect_interval: editForm.value.collect_interval,
@@ -2576,9 +2421,6 @@ const queryD1Usage = async () => {
 
 const sendTestNotification = async () => {
   if (testNotificationLoading.value) return
-  if (settingsPanelRef.value && !settingsPanelRef.value.validateSmtpFields()) {
-    return
-  }
   testNotificationLoading.value = true
   try {
     const result = await adminApiForSite({
