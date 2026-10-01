@@ -1,5 +1,7 @@
 const TURNSTILE_DOMAIN = 'https://challenges.cloudflare.com';
 const INSIGHTS_DOMAIN = 'https://static.cloudflareinsights.com';
+// 页脚“总访问量”统计脚本来源（mjj.qzz.io 站点统计）。
+const SITE_STATS_DOMAIN = 'https://mjj.qzz.io';
 const FONTS_API_DOMAIN = 'https://fonts.googleapis.com';
 const FONTS_STATIC_DOMAIN = 'https://fonts.gstatic.com';
 const RAW_GITHUB_DOMAIN = 'https://raw.githubusercontent.com';
@@ -66,15 +68,15 @@ export function buildApiDomainsWithWs(rawApiDomains) {
 }
 
 export function buildCspHeader({ staticDomains = [], apiDomains = [] } = {}) {
-  const imgSources = ["'self'", TURNSTILE_DOMAIN, RAW_GITHUB_DOMAIN, ...staticDomains, 'data:'];
+  const imgSources = ["'self'", TURNSTILE_DOMAIN, RAW_GITHUB_DOMAIN, SITE_STATS_DOMAIN, ...staticDomains, 'data:'];
   return [
     buildDirective('default-src', ["'self'"]),
-    buildDirective('script-src', ["'self'", "'unsafe-inline'", TURNSTILE_DOMAIN, INSIGHTS_DOMAIN, ...staticDomains]),
+    buildDirective('script-src', ["'self'", "'unsafe-inline'", TURNSTILE_DOMAIN, INSIGHTS_DOMAIN, SITE_STATS_DOMAIN, ...staticDomains]),
     buildDirective('style-src', ["'self'", "'unsafe-inline'", TURNSTILE_DOMAIN, FONTS_API_DOMAIN, ...staticDomains]),
     buildDirective('img-src', imgSources),
     buildDirective('media-src', imgSources),
     buildDirective('font-src', ["'self'", TURNSTILE_DOMAIN, FONTS_STATIC_DOMAIN, ...staticDomains]),
-    buildDirective('connect-src', ["'self'", TURNSTILE_DOMAIN, INSIGHTS_DOMAIN, RAW_GITHUB_DOMAIN, ...DEFAULT_CONNECT_DOMAINS, ...apiDomains]),
+    buildDirective('connect-src', ["'self'", TURNSTILE_DOMAIN, INSIGHTS_DOMAIN, RAW_GITHUB_DOMAIN, SITE_STATS_DOMAIN, ...DEFAULT_CONNECT_DOMAINS, ...apiDomains]),
     buildDirective('frame-src', [TURNSTILE_DOMAIN]),
     buildDirective('frame-ancestors', ["'none'"]),
     buildDirective('form-action', ["'self'"]),
