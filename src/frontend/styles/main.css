@@ -205,7 +205,8 @@ body::before {
 .terminal-dots {
     display: flex;
     gap: 8px;
-    width: 278px;
+    width: auto;
+    flex-shrink: 0;
 }
 
 .terminal-dot {
@@ -222,6 +223,34 @@ body::before {
     color: var(--text-primary);
     font-weight: 600;
     font-size: 12px;
+}
+
+.terminal-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.terminal-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.terminal-brand-logo {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.terminal-brand .terminal-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .terminal-header-controls {
@@ -325,8 +354,9 @@ body::before {
 
 .view-select {
     height: 32px;
-    min-width: 108px;
-    padding: 0 8px;
+    width: 86px;
+    min-width: 0;
+    padding: 0 4px;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
@@ -464,22 +494,6 @@ body::before {
     margin-bottom: 20px;
     flex-wrap: wrap;
     gap: 12px;
-}
-
-.header-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.site-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--accent-green);
-    text-shadow: 0 0 10px rgba(0, 212, 170, 0.3);
 }
 
 /* --------------------------------------------------------------------------
@@ -4958,18 +4972,6 @@ body.mikus-theme .mikus-stats-mascot-img {
         margin-bottom: 14px;
     }
 
-    .header-row {
-        align-items: stretch;
-        margin-bottom: 12px;
-    }
-
-    .site-title {
-        width: 100%;
-        font-size: 14px;
-        line-height: 1.4;
-        overflow-wrap: anywhere;
-    }
-
     .controls-group,
     .view-toggle {
         width: 100%;
@@ -5057,13 +5059,36 @@ body.mikus-theme .mikus-stats-mascot-img {
         width: auto;
     }
 
+    .terminal-header{
+        flex-wrap: wrap;
+        row-gap: 8px;
+    }
+
+    .view-select{
+        width: 78px;
+        font-size: 11px;
+    }
+
     .terminal-dot{
         width: 6px;
         height: 6px;
     }
 
+    .terminal-header-left{
+        gap: 8px;
+    }
+
+    .terminal-brand-logo{
+        width: 16px;
+        height: 16px;
+    }
+
     .terminal-title{
-        display: none;
+        font-size: 11px;
+        max-width: 30vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .lang-toggle, .theme-toggle{
@@ -5072,6 +5097,8 @@ body.mikus-theme .mikus-stats-mascot-img {
 
     .terminal-header-controls{
         gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
     }
 
     #map-container {
