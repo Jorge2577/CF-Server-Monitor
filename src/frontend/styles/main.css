@@ -1510,6 +1510,42 @@ body::before {
 /* --------------------------------------------------------------------------
    13. Stat Bar Components
    -------------------------------------------------------------------------- */
+.card-spec-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    align-items: center;
+    margin: 2px 0 8px;
+}
+
+.spec-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 650;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.spec-item svg {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.spec-cpu { color: #2563eb; }
+.spec-ram { color: #16a34a; }
+.spec-disk { color: #dc2626; }
+
 .server-stats {
     margin-bottom: 8px;
 }
