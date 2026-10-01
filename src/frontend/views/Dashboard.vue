@@ -1,6 +1,6 @@
 <template>
   <div class="container" :class="{ 'mikus-dashboard': isMikusTheme }">
-    <TerminalHeader :title="sysConfig.site_title || DEFAULT_SITE_TITLE" :logo="sysConfig.favicon" />
+    <TerminalHeader :title="sysConfig.site_title || DEFAULT_SITE_TITLE" />
     
     <div v-if="isLoading" class="loading-state" :class="{ 'mikus-loading-state': isMikusTheme }">
       <template v-if="isMikusTheme">
@@ -24,6 +24,9 @@
 
     <template v-else>
     <div class="nav-area">
+      <div class="header-row">
+        <div class="site-title">$ {{ sysConfig.site_title || DEFAULT_SITE_TITLE }}</div>
+      </div>
       <div class="filter-wrap" ref="filterWrap">
         <div class="filter-bar" id="ajax-filters">
           <button
@@ -352,7 +355,7 @@ import { currentLang, useTranslation } from '../utils/i18n.js'
 import { TIME, DEFAULT_SITE_TITLE, STORAGE, LATENCY_WINDOW } from '../utils/constants'
 import { normalizeTimestamp as normalizeMetricTimestamp } from '../utils/time.js'
 import { normalizeDashboardView, normalizeDisplayMode, resolveDisplayMode } from '../utils/displayMode.js'
-import { useDashboardView } from '../composables/useDashboardView.js'
+import { useDashboardView } from '../composables/useDashboardView'
 import { getPlaybackElapsedMs, resolvePlaybackCursor } from '../utils/playback.js'
 import { getMikusAssetUrl, isMikusThemeEnabled, normalizeThemeOptions, setMikusThemeClass } from '../utils/themeOptions.js'
 import {
@@ -384,7 +387,6 @@ const sysConfig = ref({
   frontend_ws_timeout_minutes: normalizeLiveSocketTimeoutMinutes(appConfig?.frontend_ws_timeout_minutes),
   display_mode: 'bar',
   site_title: DEFAULT_SITE_TITLE,
-  favicon: appConfig?.favicon || '',
   theme_options: normalizeThemeOptions(appConfig?.theme_options),
   latency_window: appConfig?.latency_window || {
     points: LATENCY_WINDOW.POINTS,
@@ -500,18 +502,12 @@ const filterOptions = computed(() => {
       return codeA.localeCompare(codeB)
     })
   )
-  const opts = {
-    all: stats.value.total,
-    offline: stats.value.offline,
-    ...sortedRegionStats
-  }
+  const opts = { ...sortedRegionStats }
   if (unknownStats.value > 0) opts.unknown = unknownStats.value
   return opts
 })
 
 const getFilterLabel = (code) => {
-  if (code === 'all') return currentLang.value === 'zh' ? '全部' : 'ALL'
-  if (code === 'offline') return currentLang.value === 'zh' ? '离线' : 'OFF'
   if (code === 'unknown') return '?'
   return code.toUpperCase()
 }
@@ -520,7 +516,7 @@ const filterOptionEntries = computed(() => Object.entries(filterOptions.value).m
   code,
   count,
   label: getFilterLabel(code),
-  flagCode: code !== 'all' && code !== 'offline' && code !== 'unknown' ? getFlagRegionCode(code) : ''
+  flagCode: code !== 'all' && code !== 'unknown' ? getFlagRegionCode(code) : ''
 })))
 
 const filterMoreLabel = computed(() => currentLang.value === 'zh' ? '更多' : 'MORE')
@@ -615,7 +611,6 @@ watch(filterMoreLabel, scheduleFilterMeasurement, { flush: 'post' })
 
 const filteredServers = computed(() => {
   if (currentFilter.value === 'all') return servers.value
-  if (currentFilter.value === 'offline') return servers.value.filter(server => !isServerOnline(server))
   if (currentFilter.value === 'unknown') return servers.value.filter(s => !s.region)
   return servers.value.filter(s => (s.region || 'xx').toLowerCase() === currentFilter.value)
 })
@@ -951,7 +946,6 @@ const loadDashboardConfig = async () => {
     sysConfig.value = {
       ...sysConfig.value,
       site_title: hasMultipleApiBases() && localTitle ? localTitle : (siteTitle || sysConfig.value.site_title),
-      favicon: String(config?.favicon || '').trim() || sysConfig.value.favicon,
       display_mode: resolveDisplayMode(config),
       frontend_ws_timeout_minutes: normalizeLiveSocketTimeoutMinutes(config?.frontend_ws_timeout_minutes),
       theme_options: normalizeThemeOptions(config?.theme_options),
