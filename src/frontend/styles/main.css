@@ -1546,6 +1546,28 @@ body::before {
 .spec-ram { color: #16a34a; }
 .spec-disk { color: #dc2626; }
 
+.card-time-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 8px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.card-time-row span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.card-time-row span:last-child {
+    text-align: right;
+}
+
 .server-stats {
     margin-bottom: 8px;
 }
