@@ -116,7 +116,7 @@ body::before {
     border-radius: 4px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     color: var(--text-muted);
     flex-wrap: wrap;
     gap: 10px;
@@ -1576,7 +1576,7 @@ body::before {
     align-items: center;
     gap: 5px;
     min-width: 0;
-    color: #334155;
+    color: var(--text-primary);
     font-size: 13px;
     font-weight: 650;
     white-space: nowrap;
@@ -1595,9 +1595,11 @@ body::before {
     stroke-linejoin: round;
 }
 
-.spec-cpu { color: #2563eb; }
-.spec-ram { color: #16a34a; }
-.spec-disk { color: #dc2626; }
+.spec-cpu,
+.spec-ram,
+.spec-disk {
+    color: var(--text-primary);
+}
 
 .card-time-row {
     display: flex;
@@ -1671,16 +1673,16 @@ body::before {
 
 .stat-bar-container {
     flex: 1;
-    height: 4px;
+    height: 8px;
     background: var(--border-color);
-    border-radius: 2px;
+    border-radius: 4px;
     overflow: hidden;
     opacity: .6;
 }
 
 .stat-bar-fill {
     height: 100%;
-    border-radius: 2px;
+    border-radius: 4px;
     transition: width 0.18s ease;
 }
 
@@ -3406,7 +3408,7 @@ body::before {
     border-radius: 4px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     color: var(--text-primary);
     flex-wrap: wrap;
     gap: 10px;
