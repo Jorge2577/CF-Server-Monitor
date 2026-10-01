@@ -139,6 +139,24 @@ body::before {
     outline: none;
 }
 
+.footer-stats {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 0;
+}
+
+.footer-stats-sep {
+    color: var(--border-active);
+}
+
+.footer-stats #timeDate,
+.footer-stats #site_pv_counter {
+    color: var(--accent-cyan);
+    font-weight: 600;
+}
+
 .version-update-dot {
     width: 7px;
     height: 7px;
