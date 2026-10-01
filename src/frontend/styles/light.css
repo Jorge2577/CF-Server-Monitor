@@ -38,7 +38,6 @@ body.light::before {
 }
 
 /* 特殊效果覆盖 - 移除深色主题的发光效果 */
-body.light .site-title,
 body.light .host-name,
 body.light .panel-title,
 body.light .stat-main-value,
