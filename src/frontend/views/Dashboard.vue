@@ -1,6 +1,6 @@
 <template>
   <div class="container" :class="{ 'mikus-dashboard': isMikusTheme }">
-    <TerminalHeader :title="sysConfig.site_title || DEFAULT_SITE_TITLE" :subtitle="sysConfig.site_subtitle" :logo="sysConfig.favicon" />
+    <TerminalHeader :title="sysConfig.site_title || DEFAULT_SITE_TITLE" :subtitle="sysConfig.site_subtitle" />
     
     <div v-if="isLoading" class="loading-state" :class="{ 'mikus-loading-state': isMikusTheme }">
       <template v-if="isMikusTheme">
