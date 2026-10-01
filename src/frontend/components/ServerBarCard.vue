@@ -85,15 +85,15 @@
       <div class="stat-row">
         <span class="stat-key">网速</span>
         <div class="stat-content">
-          <span class="net-down">↓ {{ netInSpeed }}/s</span>
-          <span class="net-up">↑ {{ netOutSpeed }}/s</span>
+          <span class="net-down">↓{{ netInSpeed }}/s</span>
+          <span class="net-up">↑{{ netOutSpeed }}/s</span>
         </div>
       </div>
       <div class="stat-row">
         <span class="stat-key">流量</span>
         <div class="stat-content">
-          <span class="net-down">↡ {{ totalRxMonthly }}</span>
-          <span class="net-up">↟ {{ totalTxMonthly }}</span>
+          <span class="net-down">↡{{ totalRxMonthly }}</span>
+          <span class="net-up">↟{{ totalTxMonthly }}</span>
           <span v-if="sysConfig.show_tf && server.traffic_limit" class="stat-limit">/📦{{ formatBytes(server.traffic_limit * 1024 * 1024 * 1024) }}</span>
         </div>
       </div>
