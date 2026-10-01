@@ -205,7 +205,8 @@ body::before {
 .terminal-title {
     color: var(--text-primary);
     font-weight: 600;
-    font-size: 12px;
+    font-size: 17px;
+    line-height: 1.2;
 }
 
 .terminal-header-left {
@@ -223,16 +224,29 @@ body::before {
 }
 
 .terminal-brand-logo {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     object-fit: contain;
     flex-shrink: 0;
 }
 
 .terminal-brand .terminal-title {
+    flex: 0 1 auto;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.terminal-subtitle {
+    flex: 0 0 auto;
+    max-width: 40vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 500;
 }
 
 .terminal-header-controls {
@@ -5056,11 +5070,16 @@ body.mikus-theme .mikus-stats-mascot-img {
     }
 
     .terminal-title{
-        font-size: 11px;
+        font-size: 14px;
         max-width: 30vw;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    .terminal-subtitle{
+        font-size: 10px;
+        max-width: 26vw;
     }
 
     .lang-toggle, .theme-toggle{
