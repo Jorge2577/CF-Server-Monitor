@@ -26,30 +26,6 @@
     <div class="nav-area">
       <div class="header-row">
         <div class="site-title">$ {{ sysConfig.site_title || DEFAULT_SITE_TITLE }}</div>
-        <div class="controls-group">
-          <div class="view-toggle">
-            <button
-              class="toggle-btn"
-              :class="{ active: currentView === 'bar' }"
-              @click="switchView('bar')"
-            >▤ {{ trans.barChart }}</button>
-            <button
-              class="toggle-btn"
-              :class="{ active: currentView === 'ring' }"
-              @click="switchView('ring')"
-            >◌ {{ trans.ringChart }}</button>
-            <button
-              class="toggle-btn"
-              :class="{ active: currentView === 'table' }"
-              @click="switchView('table')"
-            >≡ {{ trans.table }}</button>
-            <button
-              class="toggle-btn"
-              :class="{ active: currentView === 'map' }"
-              @click="switchView('map')"
-            >◉ {{ trans.map }}</button>
-          </div>
-        </div>
       </div>
       <div class="filter-wrap" ref="filterWrap">
         <div class="filter-bar" id="ajax-filters">
@@ -379,6 +355,7 @@ import { currentLang, useTranslation } from '../utils/i18n.js'
 import { TIME, DEFAULT_SITE_TITLE, STORAGE, LATENCY_WINDOW } from '../utils/constants'
 import { normalizeTimestamp as normalizeMetricTimestamp } from '../utils/time.js'
 import { normalizeDashboardView, normalizeDisplayMode, resolveDisplayMode } from '../utils/displayMode.js'
+import { useDashboardView } from '../composables/useDashboardView'
 import { getPlaybackElapsedMs, resolvePlaybackCursor } from '../utils/playback.js'
 import { getMikusAssetUrl, isMikusThemeEnabled, normalizeThemeOptions, setMikusThemeClass } from '../utils/themeOptions.js'
 import {
@@ -417,7 +394,7 @@ const sysConfig = ref({
   }
 })
 const regionStats = ref({})
-const currentView = ref('bar')
+const { currentView, switchView: setDashboardView, restoreView } = useDashboardView()
 const currentFilter = ref('all')
 const filterWrap = ref(null)
 const filterMeasure = ref(null)
@@ -655,16 +632,18 @@ const groupedServers = computed(() => {
 const isCardView = computed(() => currentView.value === 'bar' || currentView.value === 'ring')
 const currentCardComponent = computed(() => currentView.value === 'ring' ? ServerRingCard : ServerBarCard)
 
-const switchView = (viewName) => {
+const applyView = (viewName) => {
   const normalizedView = normalizeDashboardView(viewName, sysConfig.value.display_mode)
-  currentView.value = normalizedView
-  localStorage.setItem(STORAGE.VIEW_PREFERENCE, normalizedView)
   if (normalizedView === 'map' && !mapInitialized.value) {
     initMap()
     mapInitialized.value = true
   } else if (normalizedView === 'map' && window.myMap) {
     setTimeout(() => window.myMap.invalidateSize(), 100)
   }
+}
+
+const switchView = (viewName) => {
+  applyView(setDashboardView(viewName, sysConfig.value.display_mode))
 }
 
 const setFilter = (code) => {
@@ -1301,12 +1280,7 @@ onMounted(async () => {
   loadFinanceRates()
 
   await loadDashboardConfig()
-  const rawSavedView = localStorage.getItem(STORAGE.VIEW_PREFERENCE)
-  const savedView = normalizeDashboardView(rawSavedView, sysConfig.value.display_mode)
-  currentView.value = savedView
-  if (rawSavedView && rawSavedView !== savedView) {
-    localStorage.setItem(STORAGE.VIEW_PREFERENCE, savedView)
-  }
+  applyView(restoreView(sysConfig.value.display_mode))
   await refreshData()
   await nextTick()
   scheduleFilterMeasurement()
