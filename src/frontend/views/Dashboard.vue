@@ -1,6 +1,6 @@
 <template>
   <div class="container" :class="{ 'mikus-dashboard': isMikusTheme }">
-    <TerminalHeader :title="sysConfig.site_title || DEFAULT_SITE_TITLE" :logo="sysConfig.favicon" />
+    <TerminalHeader :title="sysConfig.site_title || DEFAULT_SITE_TITLE" :subtitle="sysConfig.site_subtitle" :logo="sysConfig.favicon" />
     
     <div v-if="isLoading" class="loading-state" :class="{ 'mikus-loading-state': isMikusTheme }">
       <template v-if="isMikusTheme">
@@ -349,7 +349,7 @@ import { fetchConfig, fetchServersAll, fetchServersAllWithProgress, formatBytes,
 import { calcTrafficUsagePercent, getUsageColor } from '../composables/useServerCardData'
 import { getTitle, hasMultipleApiBases, getPublicAssetUrl } from '../utils/config'
 import { currentLang, useTranslation } from '../utils/i18n.js'
-import { TIME, DEFAULT_SITE_TITLE, STORAGE, LATENCY_WINDOW } from '../utils/constants'
+import { TIME, DEFAULT_SITE_TITLE, DEFAULT_SITE_SUBTITLE, STORAGE, LATENCY_WINDOW } from '../utils/constants'
 import { normalizeTimestamp as normalizeMetricTimestamp } from '../utils/time.js'
 import { normalizeDashboardView, normalizeDisplayMode, resolveDisplayMode } from '../utils/displayMode.js'
 import { useDashboardView } from '../composables/useDashboardView.js'
@@ -384,6 +384,7 @@ const sysConfig = ref({
   frontend_ws_timeout_minutes: normalizeLiveSocketTimeoutMinutes(appConfig?.frontend_ws_timeout_minutes),
   display_mode: 'bar',
   site_title: DEFAULT_SITE_TITLE,
+  site_subtitle: DEFAULT_SITE_SUBTITLE,
   favicon: appConfig?.favicon || '',
   theme_options: normalizeThemeOptions(appConfig?.theme_options),
   latency_window: appConfig?.latency_window || {
@@ -951,6 +952,9 @@ const loadDashboardConfig = async () => {
     sysConfig.value = {
       ...sysConfig.value,
       site_title: hasMultipleApiBases() && localTitle ? localTitle : (siteTitle || sysConfig.value.site_title),
+      site_subtitle: config?.site_subtitle !== undefined
+        ? String(config.site_subtitle || '').trim()
+        : sysConfig.value.site_subtitle,
       favicon: String(config?.favicon || '').trim() || sysConfig.value.favicon,
       display_mode: resolveDisplayMode(config),
       frontend_ws_timeout_minutes: normalizeLiveSocketTimeoutMinutes(config?.frontend_ws_timeout_minutes),
@@ -992,6 +996,7 @@ const refreshData = async () => {
           frontend_ws_timeout_minutes: sysConfig.value.frontend_ws_timeout_minutes,
           display_mode: normalizeDisplayMode(data.sysConfig?.display_mode),
           site_title: sysConfig.value.site_title || DEFAULT_SITE_TITLE,
+          site_subtitle: sysConfig.value.site_subtitle,
           theme_options: sysConfig.value.theme_options,
           latency_window: data.sysConfig?.latency_window || sysConfig.value.latency_window
         }
@@ -1035,6 +1040,7 @@ const refreshData = async () => {
       frontend_ws_timeout_minutes: sysConfig.value.frontend_ws_timeout_minutes,
       display_mode: normalizeDisplayMode(data.sysConfig?.display_mode),
       site_title: sysConfig.value.site_title || DEFAULT_SITE_TITLE,
+      site_subtitle: sysConfig.value.site_subtitle,
       theme_options: sysConfig.value.theme_options,
       latency_window: data.sysConfig?.latency_window || sysConfig.value.latency_window
     }
