@@ -106,6 +106,15 @@ export function useServerCardData(props) {
 
   const cpuPercent = computed(() => clampPercent(Number.parseFloat(props.server.cpu || 0) || 0))
   const cpuCores = computed(() => parseInt(props.server.cpu_cores) || 0)
+  const formatCapacity = (mib) => {
+    const value = Number.parseFloat(mib)
+    if (!Number.isFinite(value) || value <= 0) return '--'
+    const gb = value / 1024
+    return `${gb.toFixed(2).replace(/\.00$/, '')} GB`
+  }
+  const cpuCoresText = computed(() => cpuCores.value > 0 ? String(cpuCores.value) : '--')
+  const ramTotalText = computed(() => formatCapacity(props.server.ram_total))
+  const diskTotalText = computed(() => formatCapacity(props.server.disk_total))
   const ramPercent = computed(() => {
     const total = Number.parseFloat(props.server.ram_total) || 0
     if (total > 0) {
@@ -440,6 +449,9 @@ export function useServerCardData(props) {
     statusText,
     cpuPercent,
     cpuCores,
+    cpuCoresText,
+    ramTotalText,
+    diskTotalText,
     ramPercent,
     swapPercent,
     hasSwapData,
