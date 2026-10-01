@@ -899,6 +899,23 @@ function Start-PingBackgroundJob {
             } catch { return "" }
         }
 
+        # 单次 ICMP 延迟探测，与 01/_worker.js 的 get_icmp_ping 一致；成功返回整数毫秒，
+        # 无响应返回空，不支持 ICMP（无权限等）返回 "err" 以便回退 TCP。
+        function Get-IcmpPing {
+            param([string]$TargetHost)
+            if (-not $TargetHost) { return "" }
+            try {
+                $ping = New-Object System.Net.NetworkInformation.Ping
+                $reply = $ping.Send($TargetHost, 2000)
+                if ($reply -and $reply.Status -eq [System.Net.NetworkInformation.IPStatus]::Success) {
+                    return ([int][math]::Round($reply.RoundtripTime)).ToString()
+                }
+                return ""
+            } catch {
+                return "err"
+            }
+        }
+
         function Get-Probe {
             param([string]$TargetHost, [int]$Count = 4)
             if ([string]::IsNullOrWhiteSpace($TargetHost)) { return @{ rtt = $false; loss = $false } }
@@ -907,10 +924,19 @@ function Start-PingBackgroundJob {
             $TargetHost = $target.host
             $port = [int]$target.port
             if (-not $TargetHost) { return @{ rtt = $false; loss = $false } }
-            $ok = 0; $totalRtt = 0
+            # 延迟测试方式与 01/_worker.js 保持一致：ICMP ping
+            $ok = 0; $totalRtt = 0; $icmpUnavailable = $false
             for ($i = 0; $i -lt $Count; $i++) {
-                $r = Get-TcpPing -TargetHost $TargetHost -Port $port
+                $r = Get-IcmpPing -TargetHost $TargetHost
+                if ($r -eq "err") { $icmpUnavailable = $true; break }
                 if ($r -match '^\d+$') { $ok++; $totalRtt += [int]$r }
+            }
+            # ICMP 不可用时回退 TCP 探测
+            if ($icmpUnavailable) {
+                for ($i = 0; $i -lt $Count; $i++) {
+                    $r = Get-TcpPing -TargetHost $TargetHost -Port $port
+                    if ($r -match '^\d+$') { $ok++; $totalRtt += [int]$r }
+                }
             }
             $rtt = if ($ok -gt 0) { [math]::Floor($totalRtt / $ok).ToString() } else { "null" }
             $loss = [math]::Floor(($Count - $ok) / $Count * 100).ToString()

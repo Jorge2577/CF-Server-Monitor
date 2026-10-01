@@ -1059,6 +1059,14 @@ get_tcp_ping_nc() {
     return 1
 }
 
+# 单次 ICMP 延迟探测，与 01/_worker.js 的 get_icmp_ping 一致；macOS 的 -W 单位为毫秒
+get_icmp_ping() {
+    local target="${1:-}"
+    local rtt
+    rtt=$(ping -c 1 -W 2000 "$target" 2>/dev/null | awk -F'time[=<]' '/time[=<]/ {split($2,a," "); if (a[1] ~ /^[0-9.]+$/) {printf "%.0f", a[1]; exit}}')
+    [ -n "$rtt" ] && echo "$rtt"
+}
+
 split_probe_target() {
     local target="${1:-}"
     local default_port="${2:-443}"
@@ -1100,6 +1108,36 @@ get_probe() {
     host="${probe_target% *}"
     port="${probe_target##* }"
 
+    # 延迟测试方式与 01/_worker.js 保持一致：ICMP ping
+    if command -v ping >/dev/null 2>&1 && ping -c 1 -W 2000 127.0.0.1 >/dev/null 2>&1; then
+        local ok=0 values="" i=1 rtt
+        while [ "$i" -le "$count" ]; do
+            rtt=$(get_icmp_ping "$host" 2>/dev/null)
+            if [ -n "$rtt" ]; then
+                ok=$((ok + 1))
+                values="$values $rtt"
+            fi
+            i=$((i + 1))
+        done
+        if [ "$ok" -gt 0 ]; then
+            local sorted median_val n=$ok
+            sorted=$(echo "$values" | tr ' ' '\n' | grep -v '^$' | sort -n)
+            if [ $((n % 2)) -eq 1 ]; then
+                median_val=$(echo "$sorted" | sed -n "$(( (n + 1) / 2 ))p")
+            else
+                local a b
+                a=$(echo "$sorted" | sed -n "$(( n / 2 ))p")
+                b=$(echo "$sorted" | sed -n "$(( n / 2 + 1 ))p")
+                median_val=$(( (a + b) / 2 ))
+            fi
+            echo "$median_val $(( (count - ok) * 100 / count ))"
+        else
+            echo "null 100"
+        fi
+        return
+    fi
+
+    # ping 不可用时回退 TCP 探测
     if has_nc_zero_io && get_time_ms >/dev/null 2>&1; then
         local ok=0 values="" i=1 rtt
         while [ "$i" -le "$count" ]; do
@@ -1128,14 +1166,7 @@ get_probe() {
         return
     fi
 
-    local icmp_out
-    icmp_out=$(ping -c "$count" -W 2000 "$host" 2>/dev/null)
-    local avg_rtt loss
-    avg_rtt=$(echo "$icmp_out" | awk -F'[/ ]' '/^rtt/{print $8}' | cut -d. -f1)
-    loss=$(echo "$icmp_out" | awk '/packet loss/{for(i=1;i<=NF;i++) if($i~/[0-9]+%/){gsub(/%/,"",$i);printf "%d",$i;exit}}')
-    [ -z "$avg_rtt" ] && avg_rtt="null"
-    [ -z "$loss" ] && loss=100
-    echo "$avg_rtt $loss"
+    echo "null 100"
 }
 
 CT_NODE="${CT_NODE:-}"
