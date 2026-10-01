@@ -334,6 +334,7 @@ export default {
           node_3_name: sys.node_3_name || 'Node 3',
           node_4_name: sys.node_4_name || 'Node 4',
           site_title: appearanceOptions.site_title || '',
+          site_subtitle: appearanceOptions.site_subtitle || '',
           display_mode: appearanceOptions.display_mode || 'bar',
           preferred_theme: appearanceOptions.preferred_theme || 'auto',
           default_language: appearanceOptions.default_language || 'auto',
