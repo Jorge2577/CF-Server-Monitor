@@ -126,6 +126,7 @@ async function fetchConfig() {
     const isPublic = data.is_public !== false
     const authorization = data.authorization === true
     const siteTitle = data.site_title || ''
+    const siteSubtitle = data.site_subtitle || ''
     const displayMode = resolveDisplayMode(data)
     const preferredTheme = ['dark', 'light', 'auto'].includes(String(data.preferred_theme || '').toLowerCase()) ? String(data.preferred_theme).toLowerCase() : 'auto'
     const defaultLanguage = ['zh', 'en', 'auto'].includes(String(data.default_language || '').toLowerCase()) ? String(data.default_language).toLowerCase() : 'auto'
@@ -158,6 +159,7 @@ async function fetchConfig() {
       is_public: isPublic,
       authorization,
       site_title: siteTitle,
+      site_subtitle: siteSubtitle,
       display_mode: displayMode,
       preferred_theme: preferredTheme,
       default_language: defaultLanguage,
@@ -174,6 +176,7 @@ async function fetchConfig() {
     github_oauth_enabled: false,
     custom_ct_name: '电信', custom_cu_name: '联通', custom_cm_name: '移动', custom_bd_name: 'BGP',
     node_1_name: 'Node 1', node_2_name: 'Node 2', node_3_name: 'Node 3', node_4_name: 'Node 4',
+    site_subtitle: '',
     display_mode: 'bar',
     preferred_theme: 'auto',
     default_language: 'auto',
@@ -345,12 +348,13 @@ async function initApp() {
         is_public: !privateAccess.hasPrivateSite,
         authorization: !privateAccess.hasUnauthorizedPrivateSite,
         site_title: first.data.site_title || '',
+        site_subtitle: first.data.site_subtitle || '',
         display_mode: resolveDisplayMode(first.data),
         preferred_theme: ['dark', 'light', 'auto'].includes(String(first.data.preferred_theme || '').toLowerCase()) ? String(first.data.preferred_theme).toLowerCase() : 'auto',
         default_language: ['zh', 'en', 'auto'].includes(String(first.data.default_language || '').toLowerCase()) ? String(first.data.default_language).toLowerCase() : 'auto',
         frontend_ws_timeout_minutes: normalizeLiveSocketTimeoutMinutes(first.data.frontend_ws_timeout_minutes),
         theme_options: normalizeThemeOptions(first.data.theme_options)
-      } : { turnstile_enabled: false, turnstile_login_enabled: false, turnstile_site_key: '', turnstile_api_index: 0, version: '', last_workers_version: '', last_agent_version: '', verified: false, is_public: true, authorization: false, site_title: '', display_mode: 'bar', preferred_theme: 'auto', default_language: 'auto', frontend_ws_timeout_minutes: 0, theme_options: {} }
+      } : { turnstile_enabled: false, turnstile_login_enabled: false, turnstile_site_key: '', turnstile_api_index: 0, version: '', last_workers_version: '', last_agent_version: '', verified: false, is_public: true, authorization: false, site_title: '', site_subtitle: '', display_mode: 'bar', preferred_theme: 'auto', default_language: 'auto', frontend_ws_timeout_minutes: 0, theme_options: {} }
       if (sharedTurnstileSite) {
         config.turnstile_enabled = true
         config.turnstile_site_key = sharedTurnstileSite.siteKey
@@ -360,7 +364,7 @@ async function initApp() {
       LAST_WORKERS_VERSION.value = config.last_workers_version || ''
       LAST_AGENT_VERSION.value = config.last_agent_version || ''
     } catch (_) {
-      config = { turnstile_enabled: false, turnstile_login_enabled: false, turnstile_site_key: '', turnstile_api_index: 0, version: '', last_workers_version: '', last_agent_version: '', verified: false, is_public: true, authorization: false, site_title: '', display_mode: 'bar', preferred_theme: 'auto', default_language: 'auto', frontend_ws_timeout_minutes: 0, theme_options: {} }
+      config = { turnstile_enabled: false, turnstile_login_enabled: false, turnstile_site_key: '', turnstile_api_index: 0, version: '', last_workers_version: '', last_agent_version: '', verified: false, is_public: true, authorization: false, site_title: '', site_subtitle: '', display_mode: 'bar', preferred_theme: 'auto', default_language: 'auto', frontend_ws_timeout_minutes: 0, theme_options: {} }
     }
   } else {
     config = await fetchConfig()
