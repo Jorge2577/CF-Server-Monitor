@@ -3,6 +3,7 @@ export const CURRENT_VERSION = '2.8.6 Beta8';
 
 // 站点设置默认值与缓存策略。
 export const DEFAULT_SITE_TITLE = 'Cloudflare Server Monitor';
+export const DEFAULT_SITE_SUBTITLE = '白嫖至上,低价优先';
 export const SITE_SETTINGS_CACHE_TTL_MS = 120 * 1000;
 export const JWT_SECRET_MIN_LENGTH = 32;
 
