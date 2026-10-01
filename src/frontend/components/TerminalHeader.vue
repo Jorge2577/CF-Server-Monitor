@@ -9,18 +9,11 @@
     </div>
     <div class="terminal-header-controls">
       <div class="lang-toggle">
-        <button 
-          class="lang-btn" 
-          :class="{ active: currentLang === 'en' }"
-          @click="setLang('en')"
-          aria-label="English"
-        >EN</button>
-        <button 
-          class="lang-btn" 
-          :class="{ active: currentLang === 'zh' }"
-          @click="setLang('zh')"
-          aria-label="中文"
-        >中</button>
+        <button
+          class="lang-btn active"
+          @click="toggleLang"
+          :aria-label="currentLang === 'zh' ? 'Switch to English' : '切换到中文'"
+        >{{ currentLang === 'zh' ? 'EN' : '中' }}</button>
       </div>
       <div class="theme-toggle-wrapper">
         <div class="theme-toggle">
@@ -67,7 +60,7 @@
 <script setup>
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { t, setLanguage, getLanguage, useTranslation } from '../utils/i18n'
+import { t, getLanguage, useTranslation, toggleLanguage } from '../utils/i18n'
 import { useTheme } from '../composables/useTheme'
 import { useDashboardView } from '../composables/useDashboardView.js'
 import { DEFAULT_SITE_TITLE } from '../utils/constants'
@@ -98,7 +91,7 @@ const adminHref = computed(() => hasConfiguredApiBase() ? '/#/admin' : '/admin#/
 const customLogoFailed = ref(false)
 const brandLogoUrl = computed(() => {
   const customLogo = String(props.logo || '').trim()
-  return !customLogoFailed.value && customLogo ? customLogo : getPublicAssetUrl('files/logo.svg')
+  return !customLogoFailed.value && customLogo ? customLogo : getPublicAssetUrl('logo.png')
 })
 
 watch(() => props.logo, () => {
@@ -109,9 +102,8 @@ const onLogoError = () => {
   customLogoFailed.value = true
 }
 
-const setLang = (lang) => {
-  setLanguage(lang)
-  currentLang.value = lang
+const toggleLang = () => {
+  currentLang.value = toggleLanguage()
 }
 
 const handleLanguageChange = (e) => {
