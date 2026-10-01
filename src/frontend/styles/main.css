@@ -202,37 +202,26 @@ body::before {
     color: var(--text-secondary);
 }
 
+.terminal-dots {
+    display: flex;
+    gap: 8px;
+    width: 278px;
+}
+
+.terminal-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.terminal-dot.red { background: #ff5f56; }
+.terminal-dot.yellow { background: #ffbd2e; }
+.terminal-dot.green { background: #27c93f; }
+
 .terminal-title {
     color: var(--text-primary);
     font-weight: 600;
     font-size: 12px;
-}
-
-.terminal-header-left {
-    display: flex;
-    align-items: center;
-    min-width: 0;
-    flex: 1 1 auto;
-}
-
-.terminal-brand {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-}
-
-.terminal-brand-logo {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
-    flex-shrink: 0;
-}
-
-.terminal-brand .terminal-title {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .terminal-header-controls {
@@ -336,9 +325,8 @@ body::before {
 
 .view-select {
     height: 32px;
-    width: 86px;
-    min-width: 0;
-    padding: 0 4px;
+    min-width: 108px;
+    padding: 0 8px;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
@@ -476,6 +464,22 @@ body::before {
     margin-bottom: 20px;
     flex-wrap: wrap;
     gap: 12px;
+}
+
+.header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.site-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent-green);
+    text-shadow: 0 0 10px rgba(0, 212, 170, 0.3);
 }
 
 /* --------------------------------------------------------------------------
@@ -696,7 +700,7 @@ body::before {
    -------------------------------------------------------------------------- */
 .filter-wrap {
     position: relative;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 .filter-bar {
@@ -714,7 +718,7 @@ body::before {
     align-items: center;
     justify-content: center;
     gap: 3px;
-    padding: 1px 6px;
+    padding: 2px 6px;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 4px;
@@ -723,9 +727,9 @@ body::before {
     cursor: pointer;
     transition: all 0.2s;
     font-family: var(--terminal-font);
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1;
-    min-height: 24px;
+    min-height: 28px;
     white-space: nowrap;
     flex: 0 0 auto;
 }
@@ -4954,6 +4958,18 @@ body.mikus-theme .mikus-stats-mascot-img {
         margin-bottom: 14px;
     }
 
+    .header-row {
+        align-items: stretch;
+        margin-bottom: 12px;
+    }
+
+    .site-title {
+        width: 100%;
+        font-size: 14px;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+
     .controls-group,
     .view-toggle {
         width: 100%;
@@ -4977,7 +4993,7 @@ body.mikus-theme .mikus-stats-mascot-img {
     }
 
     .filter-wrap {
-        margin-bottom: 10px;
+        margin-bottom: 12px;
     }
 
     .filter-bar {
@@ -4987,8 +5003,8 @@ body.mikus-theme .mikus-stats-mascot-img {
     }
 
     .filter-tag {
-        min-height: 22px;
-        padding: 1px 6px;
+        min-height: 27px;
+        padding: 4px 7px;
         font-size: 10px;
     }
 
@@ -5036,31 +5052,18 @@ body.mikus-theme .mikus-stats-mascot-img {
         margin-right: 4px;
     }
 
-    .terminal-header{
-        flex-wrap: wrap;
-        row-gap: 8px;
+    .terminal-dots{
+        gap: 3px;
+        width: auto;
     }
 
-    .view-select{
-        width: 78px;
-        font-size: 11px;
-    }
-
-    .terminal-header-left{
-        min-width: 0;
-    }
-
-    .terminal-brand-logo{
-        width: 16px;
-        height: 16px;
+    .terminal-dot{
+        width: 6px;
+        height: 6px;
     }
 
     .terminal-title{
-        font-size: 11px;
-        max-width: 30vw;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        display: none;
     }
 
     .lang-toggle, .theme-toggle{
@@ -5069,8 +5072,6 @@ body.mikus-theme .mikus-stats-mascot-img {
 
     .terminal-header-controls{
         gap: 8px;
-        flex-wrap: wrap;
-        justify-content: flex-end;
     }
 
     #map-container {
