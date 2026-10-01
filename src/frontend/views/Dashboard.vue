@@ -24,9 +24,6 @@
 
     <template v-else>
     <div class="nav-area">
-      <div class="header-row">
-        <div class="site-title">$ {{ sysConfig.site_title || DEFAULT_SITE_TITLE }}</div>
-      </div>
       <div class="filter-wrap" ref="filterWrap">
         <div class="filter-bar" id="ajax-filters">
           <button
@@ -355,7 +352,7 @@ import { currentLang, useTranslation } from '../utils/i18n.js'
 import { TIME, DEFAULT_SITE_TITLE, STORAGE, LATENCY_WINDOW } from '../utils/constants'
 import { normalizeTimestamp as normalizeMetricTimestamp } from '../utils/time.js'
 import { normalizeDashboardView, normalizeDisplayMode, resolveDisplayMode } from '../utils/displayMode.js'
-import { useDashboardView } from '../composables/useDashboardView'
+import { useDashboardView } from '../composables/useDashboardView.js'
 import { getPlaybackElapsedMs, resolvePlaybackCursor } from '../utils/playback.js'
 import { getMikusAssetUrl, isMikusThemeEnabled, normalizeThemeOptions, setMikusThemeClass } from '../utils/themeOptions.js'
 import {
