@@ -34,7 +34,7 @@
     <div class="card-spec-row">
       <span class="spec-item spec-cpu">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"></rect><path d="M4 9h3M4 15h3M17 9h3M17 15h3M9 4v3M15 4v3M9 17v3M15 17v3"></path></svg>
-        {{ cpuCoresText }} 
+        {{ cpuCoresText }} Cores
       </span>
       <span class="spec-item spec-ram">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="8" width="16" height="8" rx="1.5"></rect><path d="M7 8V5M12 8V5M17 8V5M7 16v3M12 16v3M17 16v3"></path></svg>
