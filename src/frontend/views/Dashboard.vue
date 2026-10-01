@@ -499,12 +499,18 @@ const filterOptions = computed(() => {
       return codeA.localeCompare(codeB)
     })
   )
-  const opts = { ...sortedRegionStats }
+  const opts = {
+    all: stats.value.total,
+    offline: stats.value.offline,
+    ...sortedRegionStats
+  }
   if (unknownStats.value > 0) opts.unknown = unknownStats.value
   return opts
 })
 
 const getFilterLabel = (code) => {
+  if (code === 'all') return currentLang.value === 'zh' ? '全部' : 'ALL'
+  if (code === 'offline') return currentLang.value === 'zh' ? '离线' : 'OFF'
   if (code === 'unknown') return '?'
   return code.toUpperCase()
 }
@@ -513,7 +519,7 @@ const filterOptionEntries = computed(() => Object.entries(filterOptions.value).m
   code,
   count,
   label: getFilterLabel(code),
-  flagCode: code !== 'all' && code !== 'unknown' ? getFlagRegionCode(code) : ''
+  flagCode: code !== 'all' && code !== 'offline' && code !== 'unknown' ? getFlagRegionCode(code) : ''
 })))
 
 const filterMoreLabel = computed(() => currentLang.value === 'zh' ? '更多' : 'MORE')
@@ -608,6 +614,7 @@ watch(filterMoreLabel, scheduleFilterMeasurement, { flush: 'post' })
 
 const filteredServers = computed(() => {
   if (currentFilter.value === 'all') return servers.value
+  if (currentFilter.value === 'offline') return servers.value.filter(server => !isServerOnline(server))
   if (currentFilter.value === 'unknown') return servers.value.filter(s => !s.region)
   return servers.value.filter(s => (s.region || 'xx').toLowerCase() === currentFilter.value)
 })
