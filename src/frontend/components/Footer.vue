@@ -5,7 +5,7 @@
       :aria-label="updateTitle || undefined"
       :tabindex="hasWorkersUpdate ? 0 : undefined"
     >
-      <span>V{{ VERSION }}</span>
+      <span>V3.0.0</span>
       <span
         v-if="hasWorkersUpdate"
         class="version-update-dot"
@@ -17,7 +17,7 @@
         role="tooltip"
       >{{ updateTitle }}</span>
     </span>
-    <span>Powered by <a href="https://github.com/huilang-me/CF-Server-Monitor" target="_blank">CF-Server-Monitor</a></span>
+    <span>by <a href="https://github.com/huilang-me/CF-Server-Monitor" target="_blank">CF-S-M</a></span>
   </footer>
 </template>
 
