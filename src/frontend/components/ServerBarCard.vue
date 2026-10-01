@@ -82,31 +82,6 @@
           <span class="stat-value">{{ diskPercent.toFixed(2) }}%</span>
         </div>
       </div>
-      <div class="stat-row" v-if="sysConfig.show_tf">
-        <span class="stat-key">已用</span>
-        <div class="stat-content stat-content-meter">
-          <template v-if="server.traffic_limit">
-            <div class="stat-bar-container">
-              <div class="stat-bar-fill" :style="{ width: Math.min(100, trafficUsagePercent) + '%', background: getUsageColor(trafficUsagePercent) }"></div>
-            </div>
-            <span class="stat-value">{{ trafficUsagePercentText }}%</span>
-          </template>
-          <template v-else>
-            <div class="stat-bar-container">
-              <div class="stat-bar-fill" style="background-image: linear-gradient(to right, #00d4aa, #4da6ff, #ffb870, #f85149);"></div>
-            </div>
-            <span class="stat-value" style="font-size: 2em;line-height: 0;">∞</span>
-          </template>
-        </div>
-      </div>
-      <div class="stat-row">
-        <span class="stat-key">负载</span>
-        <div class="stat-content">
-          <span class="net-down">{{ loadAvg[0].toFixed(2) }}</span>
-          <span>{{ loadAvg[1].toFixed(2) }}</span>
-          <span class="net-up">{{ loadAvg[2].toFixed(2) }}</span>
-        </div>
-      </div>
       <div class="stat-row">
         <span class="stat-key">网速</span>
         <div class="stat-content">
@@ -119,7 +94,15 @@
         <div class="stat-content">
           <span class="net-down">↡ {{ totalRxMonthly }}</span>
           <span class="net-up">↟ {{ totalTxMonthly }}</span>
-          <span v-if="sysConfig.show_tf && server.traffic_limit" class="stat-limit">/ 📦 {{ formatBytes(server.traffic_limit * 1024 * 1024 * 1024) }}</span>
+          <span v-if="sysConfig.show_tf && server.traffic_limit" class="stat-limit">/📦{{ formatBytes(server.traffic_limit * 1024 * 1024 * 1024) }}</span>
+        </div>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">负载</span>
+        <div class="stat-content">
+          <span class="net-down">{{ loadAvg[0].toFixed(2) }}</span>
+          <span>{{ loadAvg[1].toFixed(2) }}</span>
+          <span class="net-up">{{ loadAvg[2].toFixed(2) }}</span>
         </div>
       </div>
     </div>
@@ -176,8 +159,6 @@ const {
   ramPercent,
   swapPercent,
   diskPercent,
-  trafficUsagePercent,
-  trafficUsagePercentText,
   getUsageColor,
   tagList,
   tagColorClass,
