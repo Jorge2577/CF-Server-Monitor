@@ -4,6 +4,7 @@
       <div class="terminal-brand">
         <img class="terminal-brand-logo" :src="brandLogoUrl" alt="logo" @error="onLogoError">
         <span class="terminal-title">{{ title }}</span>
+        <span v-if="subtitle" class="terminal-subtitle">{{ subtitle }}</span>
       </div>
     </div>
     <div class="terminal-header-controls">
@@ -76,6 +77,10 @@ const props = defineProps({
   title: {
     type: String,
     default: DEFAULT_SITE_TITLE
+  },
+  subtitle: {
+    type: String,
+    default: ''
   },
   logo: {
     type: String,
