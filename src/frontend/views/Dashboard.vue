@@ -1,6 +1,6 @@
 <template>
   <div class="container" :class="{ 'mikus-dashboard': isMikusTheme }">
-    <TerminalHeader :title="sysConfig.site_title || DEFAULT_SITE_TITLE" />
+    <TerminalHeader :title="sysConfig.site_title || DEFAULT_SITE_TITLE" :logo="sysConfig.favicon" />
     
     <div v-if="isLoading" class="loading-state" :class="{ 'mikus-loading-state': isMikusTheme }">
       <template v-if="isMikusTheme">
@@ -384,6 +384,7 @@ const sysConfig = ref({
   frontend_ws_timeout_minutes: normalizeLiveSocketTimeoutMinutes(appConfig?.frontend_ws_timeout_minutes),
   display_mode: 'bar',
   site_title: DEFAULT_SITE_TITLE,
+  favicon: appConfig?.favicon || '',
   theme_options: normalizeThemeOptions(appConfig?.theme_options),
   latency_window: appConfig?.latency_window || {
     points: LATENCY_WINDOW.POINTS,
@@ -950,6 +951,7 @@ const loadDashboardConfig = async () => {
     sysConfig.value = {
       ...sysConfig.value,
       site_title: hasMultipleApiBases() && localTitle ? localTitle : (siteTitle || sysConfig.value.site_title),
+      favicon: String(config?.favicon || '').trim() || sysConfig.value.favicon,
       display_mode: resolveDisplayMode(config),
       frontend_ws_timeout_minutes: normalizeLiveSocketTimeoutMinutes(config?.frontend_ws_timeout_minutes),
       theme_options: normalizeThemeOptions(config?.theme_options),
