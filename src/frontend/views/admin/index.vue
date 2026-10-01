@@ -908,6 +908,7 @@ const newServerGroup = ref('')
 
 const settings = ref({
   site_title: '',
+  site_subtitle: '',
   custom_bg: '',
   custom_bg_mobile: '',
   favicon: '',
@@ -1358,6 +1359,7 @@ const loadSettings = async () => {
       const settingsData = data.settings || {}
       settings.value = {
         site_title: settingsData.site_title || '',
+        site_subtitle: settingsData.site_subtitle || '',
         custom_bg: settingsData.custom_bg || '',
         custom_bg_mobile: settingsData.custom_bg_mobile || '',
         favicon: settingsData.favicon || '',
@@ -1538,6 +1540,7 @@ const saveSettings = async () => {
     action: 'save_settings',
     settings: {
       site_title: settings.value.site_title,
+      site_subtitle: settings.value.site_subtitle,
       custom_bg: settings.value.custom_bg,
       custom_bg_mobile: settings.value.custom_bg_mobile,
       favicon: settings.value.favicon,
