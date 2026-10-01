@@ -1,11 +1,16 @@
 <template>
   <div class="terminal-header">
-    <div class="terminal-dots">
-      <span class="terminal-dot red"></span>
-      <span class="terminal-dot yellow"></span>
-      <span class="terminal-dot green"></span>
+    <div class="terminal-header-left">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <div class="terminal-brand">
+        <img class="terminal-brand-logo" :src="logoUrl" alt="logo">
+        <span class="terminal-title">{{ title }}</span>
+      </div>
     </div>
-    <div class="terminal-title">{{ title }}</div>
     <div class="terminal-header-controls">
       <div class="lang-toggle">
         <button 
@@ -68,9 +73,9 @@ import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { t, setLanguage, getLanguage, useTranslation } from '../utils/i18n'
 import { useTheme } from '../composables/useTheme'
-import { useDashboardView } from '../composables/useDashboardView'
+import { useDashboardView } from '../composables/useDashboardView.js'
 import { DEFAULT_SITE_TITLE } from '../utils/constants'
-import { hasConfiguredApiBase } from '../utils/config'
+import { hasConfiguredApiBase, getPublicAssetUrl } from '../utils/config'
 
 defineProps({
   title: {
@@ -86,6 +91,7 @@ const currentLang = ref('en')
 const route = useRoute()
 const isAdminPage = ref(route.path === '/admin')
 const adminHref = computed(() => hasConfiguredApiBase() ? '/#/admin' : '/admin#/admin')
+const logoUrl = getPublicAssetUrl('files/logo.svg')
 
 const setLang = (lang) => {
   setLanguage(lang)
