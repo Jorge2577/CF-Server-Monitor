@@ -1,11 +1,11 @@
 <template>
   <div class="terminal-header">
-    <div class="terminal-dots">
-      <span class="terminal-dot red"></span>
-      <span class="terminal-dot yellow"></span>
-      <span class="terminal-dot green"></span>
+    <div class="terminal-header-left">
+      <div class="terminal-brand">
+        <img class="terminal-brand-logo" :src="brandLogoUrl" alt="logo" @error="onLogoError">
+        <span class="terminal-title">{{ title }}</span>
+      </div>
     </div>
-    <div class="terminal-title">{{ title }}</div>
     <div class="terminal-header-controls">
       <div class="lang-toggle">
         <button 
@@ -64,18 +64,22 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { t, setLanguage, getLanguage, useTranslation } from '../utils/i18n'
 import { useTheme } from '../composables/useTheme'
-import { useDashboardView } from '../composables/useDashboardView'
+import { useDashboardView } from '../composables/useDashboardView.js'
 import { DEFAULT_SITE_TITLE } from '../utils/constants'
-import { hasConfiguredApiBase } from '../utils/config'
+import { hasConfiguredApiBase, getPublicAssetUrl } from '../utils/config'
 
-defineProps({
+const props = defineProps({
   title: {
     type: String,
     default: DEFAULT_SITE_TITLE
+  },
+  logo: {
+    type: String,
+    default: ''
   }
 })
 
@@ -86,6 +90,19 @@ const currentLang = ref('en')
 const route = useRoute()
 const isAdminPage = ref(route.path === '/admin')
 const adminHref = computed(() => hasConfiguredApiBase() ? '/#/admin' : '/admin#/admin')
+const customLogoFailed = ref(false)
+const brandLogoUrl = computed(() => {
+  const customLogo = String(props.logo || '').trim()
+  return !customLogoFailed.value && customLogo ? customLogo : getPublicAssetUrl('files/logo.svg')
+})
+
+watch(() => props.logo, () => {
+  customLogoFailed.value = false
+})
+
+const onLogoError = () => {
+  customLogoFailed.value = true
+}
 
 const setLang = (lang) => {
   setLanguage(lang)
