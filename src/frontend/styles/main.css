@@ -202,23 +202,6 @@ body::before {
     color: var(--text-secondary);
 }
 
-.terminal-dots {
-    display: flex;
-    gap: 8px;
-    width: auto;
-    flex-shrink: 0;
-}
-
-.terminal-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-}
-
-.terminal-dot.red { background: #ff5f56; }
-.terminal-dot.yellow { background: #ffbd2e; }
-.terminal-dot.green { background: #27c93f; }
-
 .terminal-title {
     color: var(--text-primary);
     font-weight: 600;
@@ -228,7 +211,6 @@ body::before {
 .terminal-header-left {
     display: flex;
     align-items: center;
-    gap: 14px;
     min-width: 0;
     flex: 1 1 auto;
 }
@@ -5054,11 +5036,6 @@ body.mikus-theme .mikus-stats-mascot-img {
         margin-right: 4px;
     }
 
-    .terminal-dots{
-        gap: 3px;
-        width: auto;
-    }
-
     .terminal-header{
         flex-wrap: wrap;
         row-gap: 8px;
@@ -5069,13 +5046,8 @@ body.mikus-theme .mikus-stats-mascot-img {
         font-size: 11px;
     }
 
-    .terminal-dot{
-        width: 6px;
-        height: 6px;
-    }
-
     .terminal-header-left{
-        gap: 8px;
+        min-width: 0;
     }
 
     .terminal-brand-logo{
