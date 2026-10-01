@@ -65,6 +65,15 @@
         </div>
       </div>
       <div class="stat-row">
+        <span class="stat-key">SWAP</span>
+        <div class="stat-content stat-content-meter">
+          <div class="stat-bar-container">
+            <div class="stat-bar-fill" :style="{ width: swapPercent + '%', background: getUsageColor(swapPercent) }"></div>
+          </div>
+          <span class="stat-value">{{ swapPercent.toFixed(2) }}%</span>
+        </div>
+      </div>
+      <div class="stat-row">
         <span class="stat-key">硬盘</span>
         <div class="stat-content stat-content-meter">
           <div class="stat-bar-container">
@@ -128,6 +137,10 @@
       :format-loss-value="formatLossValue"
       :is-ping-valid="isPingValid"
     />
+    <div class="card-time-row">
+      <span>到期：{{ cardExpireDateText }}</span>
+      <span>在线：{{ cardUptimeText }}</span>
+    </div>
   </router-link>
 </template>
 
@@ -161,6 +174,7 @@ const {
   ramTotalText,
   diskTotalText,
   ramPercent,
+  swapPercent,
   diskPercent,
   trafficUsagePercent,
   trafficUsagePercentText,
@@ -178,6 +192,8 @@ const {
   loadAvg,
   isExpired,
   expireText,
+  cardExpireDateText,
+  cardUptimeText,
   isPingValid,
   getPingColor,
   getLossColor,
