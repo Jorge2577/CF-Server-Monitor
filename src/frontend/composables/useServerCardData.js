@@ -245,6 +245,22 @@ export function useServerCardData(props) {
   }
 
   const uptimeText = computed(() => formatUptime(props.server.boot_time, currentTime.value))
+  const cardExpireDateText = computed(() => {
+    const raw = String(props.server.expire_date || '').trim()
+    if (!raw) return '--'
+    const date = new Date(raw)
+    if (Number.isNaN(date.getTime())) return raw
+    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
+  })
+  const cardUptimeText = computed(() => {
+    const boot = Number(props.server.boot_time)
+    if (!Number.isFinite(boot) || boot <= 0) return '--'
+    const bootMs = boot < 10000000000 ? boot * 1000 : boot
+    const diffMs = Math.max(0, currentTime.value - bootMs)
+    const days = Math.floor(diffMs / 86400000)
+    const hours = Math.floor((diffMs % 86400000) / 3600000)
+    return `${days}天${hours}小时`
+  })
 
   const formatMetricUsage = (used, total) => `${formatBytes((Number(used) || 0) * 1024 * 1024)} / ${formatBytes((Number(total) || 0) * 1024 * 1024)}`
   const ramUsageText = computed(() => formatMetricUsage(props.server.ram_used, props.server.ram_total))
@@ -478,6 +494,8 @@ export function useServerCardData(props) {
     expireDateTitle,
     loadAvg,
     uptimeText,
+    cardExpireDateText,
+    cardUptimeText,
     ramUsageText,
     diskUsageText,
     isExpired,
