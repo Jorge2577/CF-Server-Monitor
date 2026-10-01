@@ -5,7 +5,7 @@
       :aria-label="updateTitle || undefined"
       :tabindex="hasWorkersUpdate ? 0 : undefined"
     >
-      <span>V3.0.0</span>
+      <span>@ws01 V3.0.0</span>
       <span
         v-if="hasWorkersUpdate"
         class="version-update-dot"
