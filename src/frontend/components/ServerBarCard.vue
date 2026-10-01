@@ -34,15 +34,15 @@
     <div class="card-spec-row">
       <span class="spec-item spec-cpu">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"></rect><path d="M4 9h3M4 15h3M17 9h3M17 15h3M9 4v3M15 4v3M9 17v3M15 17v3"></path></svg>
-        {{ cpuCoresText }} CPU
+        {{ cpuCoresText }} 
       </span>
       <span class="spec-item spec-ram">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="8" width="16" height="8" rx="1.5"></rect><path d="M7 8V5M12 8V5M17 8V5M7 16v3M12 16v3M17 16v3"></path></svg>
-        {{ ramTotalText }} 内存
+        {{ ramTotalText }} 
       </span>
       <span class="spec-item spec-disk">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14l2 10H3L5 7z"></path><path d="M8 17v2h8v-2M9 11h6"></path></svg>
-        {{ diskTotalText }} 硬盘
+        {{ diskTotalText }} 
       </span>
     </div>
     <div class="server-stats">
@@ -101,15 +101,15 @@
       <div class="stat-row">
         <span class="stat-key">网速</span>
         <div class="stat-content">
-          <span class="net-down">▼ {{ netInSpeed }}/s</span>
-          <span class="net-up">▲ {{ netOutSpeed }}/s</span>
+          <span class="net-down">↓ {{ netInSpeed }}/s</span>
+          <span class="net-up">↑ {{ netOutSpeed }}/s</span>
         </div>
       </div>
       <div class="stat-row">
         <span class="stat-key">流量</span>
         <div class="stat-content">
-          <span class="net-down">▼ {{ totalRxMonthly }}</span>
-          <span class="net-up">▲ {{ totalTxMonthly }}</span>
+          <span class="net-down">↡ {{ totalRxMonthly }}</span>
+          <span class="net-up">↟ {{ totalTxMonthly }}</span>
           <span v-if="sysConfig.show_tf && server.traffic_limit" class="stat-limit">/ 📦 {{ formatBytes(server.traffic_limit * 1024 * 1024 * 1024) }}</span>
         </div>
       </div>
