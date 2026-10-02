@@ -4,6 +4,7 @@
       <div class="terminal-brand">
         <img class="terminal-brand-logo" :src="brandLogoUrl" alt="logo" @error="onLogoError">
         <span class="terminal-title">{{ title }}</span>
+        <slot name="after-title"></slot>
         <span v-if="subtitle" class="terminal-subtitle">{{ subtitle }}</span>
       </div>
     </div>
