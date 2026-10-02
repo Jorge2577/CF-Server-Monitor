@@ -2149,7 +2149,6 @@ body::before {
     color: var(--accent-green);
     padding: 8px 0;
     margin-bottom: 12px;
-    border-bottom: 1px solid var(--border-color);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
