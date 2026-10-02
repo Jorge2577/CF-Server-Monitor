@@ -100,8 +100,8 @@
       <div class="stat-row">
         <span class="stat-key">负载</span>
         <div class="stat-content">
-          <span class="net-down">{{ loadAvg[0].toFixed(2) }}</span>
-          <span>{{ loadAvg[1].toFixed(2) }}</span>
+          <span class="net-down">{{ loadAvg[0].toFixed(2) }}</span>|
+          <span>{{ loadAvg[1].toFixed(2) }}</span>|
           <span class="net-up">{{ loadAvg[2].toFixed(2) }}</span>
         </div>
       </div>
