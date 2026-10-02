@@ -22,6 +22,7 @@
     <div v-else class="container admin-container" id="admin-content">
       <TerminalHeader :title="trans.adminPanel">
         <template #after-title>
+          <button type="button" class="btn header-refresh-btn" :disabled="adminSiteLoading" @click="refreshServers">↻ {{ trans.refresh }}</button>
           <button type="button" class="btn btn-red header-logout-btn" @click="logout">🚪 {{ trans.logout }}</button>
         </template>
       </TerminalHeader>
@@ -33,11 +34,9 @@
       </div>
 
       <div class="main-panel">
-        <div class="panel-header admin-toolbar">
+        <div v-if="isMultipleMode" class="panel-header admin-toolbar">
           <div class="header-actions">
-            <button @click="refreshServers" class="btn" :disabled="adminSiteLoading">↻ {{ trans.refresh }}</button>
             <select
-              v-if="isMultipleMode"
               v-model.number="selectedApiIndex"
               class="form-select admin-site-select"
               :disabled="adminSiteLoading"
@@ -51,7 +50,7 @@
                 [{{ index }}] {{ base }}
               </option>
             </select>
-            <HelpTooltip v-if="isMultipleMode" :text="trans.apiEndpoint" />
+            <HelpTooltip :text="trans.apiEndpoint" />
           </div>
         </div>
         <div class="tabs">
