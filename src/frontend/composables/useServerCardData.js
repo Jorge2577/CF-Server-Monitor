@@ -271,6 +271,15 @@ export function useServerCardData(props) {
     return !isNaN(expTime) && expTime < currentTime.value
   })
 
+  const expireDaysColor = computed(() => {
+    const expTime = new Date(props.server.expire_date).getTime()
+    if (isNaN(expTime)) return ''
+    const days = Math.ceil((expTime - currentTime.value) / (1000 * 3600 * 24))
+    if (days >= 30 && days < 60) return '#FF8247'
+    if (days < 30) return '#FF0000'
+    return ''
+  })
+
   const expireText = computed(() => {
     const expTime = new Date(props.server.expire_date).getTime()
     if (isNaN(expTime)) return ''
@@ -499,6 +508,7 @@ export function useServerCardData(props) {
     ramUsageText,
     diskUsageText,
     isExpired,
+    expireDaysColor,
     expireText,
     getUsageColor,
     getRingStyle,
