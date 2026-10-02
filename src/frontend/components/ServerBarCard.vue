@@ -50,7 +50,7 @@
         <span class="stat-key">CPU</span>
         <div class="stat-content stat-content-meter">
           <div class="stat-bar-container">
-            <div class="stat-bar-fill" :style="{ width: cpuPercent + '%', background: getUsageColor(cpuPercent) }"></div>
+            <div class="stat-bar-fill" :style="{ width: cpuPercent + '%', background: getBarUsageColor(cpuPercent) }"></div>
           </div>
           <span class="stat-value">{{ cpuPercent.toFixed(2) }}%</span>
         </div>
@@ -59,7 +59,7 @@
         <span class="stat-key">内存</span>
         <div class="stat-content stat-content-meter">
           <div class="stat-bar-container">
-            <div class="stat-bar-fill" :style="{ width: ramPercent + '%', background: getUsageColor(ramPercent) }"></div>
+            <div class="stat-bar-fill" :style="{ width: ramPercent + '%', background: getBarUsageColor(ramPercent) }"></div>
           </div>
           <span class="stat-value">{{ ramPercent.toFixed(2) }}%</span>
         </div>
@@ -68,7 +68,7 @@
         <span class="stat-key">SWAP</span>
         <div class="stat-content stat-content-meter">
           <div class="stat-bar-container">
-            <div class="stat-bar-fill" :style="{ width: swapPercent + '%', background: getUsageColor(swapPercent) }"></div>
+            <div class="stat-bar-fill" :style="{ width: swapPercent + '%', background: getBarUsageColor(swapPercent) }"></div>
           </div>
           <span class="stat-value">{{ swapPercent.toFixed(2) }}%</span>
         </div>
@@ -77,7 +77,7 @@
         <span class="stat-key">硬盘</span>
         <div class="stat-content stat-content-meter">
           <div class="stat-bar-container">
-            <div class="stat-bar-fill" :style="{ width: diskPercent + '%', background: getUsageColor(diskPercent) }"></div>
+            <div class="stat-bar-fill" :style="{ width: diskPercent + '%', background: getBarUsageColor(diskPercent) }"></div>
           </div>
           <span class="stat-value">{{ diskPercent.toFixed(2) }}%</span>
         </div>
@@ -159,7 +159,6 @@ const {
   ramPercent,
   swapPercent,
   diskPercent,
-  getUsageColor,
   tagList,
   tagColorClass,
   hasPublicIPv4,
@@ -187,4 +186,11 @@ const {
   getPublicAssetUrl,
   formatBytes
 } = useServerCardData(props)
+
+const getBarUsageColor = (percent) => {
+  const value = Number(percent)
+  if (!Number.isFinite(value) || value < 50) return '#008B45'
+  if (value < 80) return '#FF8247'
+  return '#FF0000'
+}
 </script>
