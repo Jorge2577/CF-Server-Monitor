@@ -2204,6 +2204,16 @@ body::before {
     gap: 10px;
 }
 
+.header-logout-btn {
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+
+.admin-toolbar {
+    justify-content: flex-end;
+    margin-bottom: 12px;
+}
+
 .admin-site-select {
     width: min(320px, 42vw);
     min-width: 180px;
