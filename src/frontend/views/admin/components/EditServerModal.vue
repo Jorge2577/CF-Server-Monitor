@@ -142,8 +142,8 @@
             <HelpTooltip :text="trans.pingModeIcmpRootHint" />
           </label>
           <select v-model="editForm.ping_mode" class="form-select">
-            <option value="tcp">TCP</option>
             <option value="icmp">ICMP (root)</option>
+            <option value="tcp">TCP</option>
           </select>
         </div>
         <div class="form-group flex-1">
