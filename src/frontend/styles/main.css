@@ -878,6 +878,8 @@ body::before {
 }
 
 .global-stats .stat-main-value {
+    color: var(--text-primary);
+    text-shadow: none;
     line-height: 1.25;
 }
 
@@ -885,6 +887,11 @@ body::before {
     color: var(--text-secondary);
     margin-top: 4px;
     text-transform: uppercase;
+}
+
+.global-stats .stat-sub-info,
+.global-stats .finance-currency-code {
+    color: var(--text-primary);
 }
 
 .global-stats .stat-sub-info {
