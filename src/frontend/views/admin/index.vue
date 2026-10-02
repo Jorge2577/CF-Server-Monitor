@@ -203,18 +203,14 @@
         :delete-server-id="deleteServerId"
         :current-server-name="currentServerName"
         :delete-target-os="deleteTargetOs"
-        :delete-version="deleteVersion"
         :delete-install-mode="deleteInstallMode"
-        :delete-gh-proxy="deleteGhProxy"
         :uninstall-command="getUninstallCommand()"
         :uninstall-copied="uninstallCopied"
         @close="closeDeleteModal"
         @confirm-delete="confirmDelete"
         @copy-uninstall="copyUninstallCmd"
         @update:delete-target-os="deleteTargetOs = $event"
-        @update:delete-version="deleteVersion = $event"
         @update:delete-install-mode="deleteInstallMode = $event"
-        @update:delete-gh-proxy="deleteGhProxy = $event"
       />
 
       <CopyCommandModal
@@ -224,8 +220,6 @@
         :current-server-name="currentServerName"
         :target-os="targetOs"
         :install-mode="installMode"
-        :install-gh-proxy="installGhProxy"
-        :install-version="installVersion"
         :collect-interval="collectInterval"
         :report-interval="reportInterval"
         :wss-report-interval="wssReportInterval"
@@ -250,8 +244,6 @@
         @copy-cmd="copyCustomCmd"
         @update:target-os="targetOs = $event"
         @update:install-mode="installMode = $event"
-        @update:install-gh-proxy="installGhProxy = $event"
-        @update:install-version="installVersion = $event"
         @open-edit-from-copy="openEditModalFromCopy"
       />
 
@@ -569,43 +561,11 @@ const route = useRoute()
 const router = useRouter()
 const appConfig = inject('appConfig', {})
 let startupConfigConsumed = false
-const AGENT_RELEASE_URL = 'https://api.github.com/repos/huilang-me/cfsm-agent/releases/latest'
-const AGENT_RELEASE_FAILURE_TTL = 30 * 1000
-
-let cachedAgentReleaseVersion = ''
-let cachedAgentReleaseFailureAt = 0
-let agentReleasePromise = null
-
 const normalizeVersion = (version) => String(version || '').trim()
 
-const fetchLatestAgentReleaseVersion = async () => {
-  if (cachedAgentReleaseVersion) return cachedAgentReleaseVersion
-  if (cachedAgentReleaseFailureAt && Date.now() - cachedAgentReleaseFailureAt < AGENT_RELEASE_FAILURE_TTL) return ''
-  if (agentReleasePromise) return agentReleasePromise
-
-  agentReleasePromise = fetch(AGENT_RELEASE_URL, {
-    headers: { Accept: 'application/vnd.github+json' }
-  }).then(async (res) => {
-    if (!res.ok) throw new Error(`GitHub release request failed: ${res.status}`)
-    const release = await res.json()
-    const version = normalizeVersion(release?.tag_name)
-    if (version) {
-      cachedAgentReleaseVersion = version
-      cachedAgentReleaseFailureAt = 0
-    } else {
-      cachedAgentReleaseFailureAt = Date.now()
-    }
-    return version
-  }).catch((e) => {
-    cachedAgentReleaseFailureAt = Date.now()
-    console.error('[ERROR] Load latest agent release failed:', e)
-    return ''
-  }).finally(() => {
-    agentReleasePromise = null
-  })
-
-  return agentReleasePromise
-}
+// 自托管模式：不再访问 huilang-me/cfsm-agent 的 GitHub Release，
+// 探针版本号以站点自身 /api/config 返回的 last_agent_version 为准。
+const fetchLatestAgentReleaseVersion = async () => ''
 
 const getMessage = (msg) => {
   if (typeof msg === 'string') {
@@ -1047,9 +1007,7 @@ const copiedServerId = ref(null)
 const copiedNoteServerId = ref(null)
 const copiedSpecKey = ref(null)
 const deleteTargetOs = ref('linux')
-const deleteVersion = ref('go')
 const deleteInstallMode = ref('current-user')
-const deleteGhProxy = ref('')
 const uninstallCopied = ref(false)
 const saving = ref(false)
 
@@ -1076,8 +1034,6 @@ const copyServerId = ref('')
 const currentServerName = ref('')
 const targetOs = ref('linux')
 const installMode = ref('current-user')
-const installGhProxy = ref('')
-const installVersion = ref('')
 const collectInterval = ref(0)
 const reportInterval = ref(60)
 const wssReportInterval = ref(2)
@@ -1661,27 +1617,14 @@ const resolveServerPingNode = (server, field) => {
 
 const getUninstallCommand = () => {
   const HOST = selectedApiBase.value
-  const isGo = deleteVersion.value === 'go'
-  const proxy = isGo ? deleteGhProxy.value.trim() : ''
-  if (isGo) {
-    if (deleteTargetOs.value === 'windows') {
-      const ghUrl = buildGhRawUrl(proxy, '/huilang-me/cfsm-agent/main/install.ps1')
-      const proxyParam = proxy ? ` ${quotePowerShellArg(`--install-ghproxy=${proxy}`)}` : ''
-      return `$script = "$env:TEMP\\install-cf-probe.ps1"; Invoke-WebRequest -Uri ${quotePowerShellArg(ghUrl)} -OutFile $script -UseBasicParsing; PowerShell -ExecutionPolicy Bypass -File $script uninstall${proxyParam}`
-    }
-    const sudoPrefix = deleteTargetOs.value === 'mac' ? 'sudo ' : ''
-    const ghUrl = buildGhRawUrl(proxy, '/huilang-me/cfsm-agent/main/install.sh')
-    const proxyParam = proxy ? ` ${quotePosixShellArg(`--install-ghproxy=${proxy}`)}` : ''
-    const uninstallCommand = `curl -fsSL ${quotePosixShellArg(ghUrl)} | ${sudoPrefix}sh -s -- uninstall${proxyParam}`
-    if (deleteTargetOs.value === 'linux' && deleteInstallMode.value === 'cfsm-user') {
-      return buildUninstallAsCfsmCommand(uninstallCommand)
-    }
-    return uninstallCommand
-  }
   if (deleteTargetOs.value === 'windows') {
     return `$script = Join-Path (Get-Location) 'uninstall-cf-probe.ps1'; Invoke-WebRequest -Uri '${HOST}/uninstall.ps1' -OutFile $script -UseBasicParsing; PowerShell -ExecutionPolicy Bypass -File $script`
   }
-  return `curl -fsSL '${HOST}/uninstall.sh' | sh -s`
+  const uninstallCommand = `curl -fsSL '${HOST}/uninstall.sh' | sh -s`
+  if (deleteTargetOs.value === 'linux' && deleteInstallMode.value === 'cfsm-user') {
+    return buildUninstallAsCfsmCommand(uninstallCommand)
+  }
+  return uninstallCommand
 }
 
 const copyCmd = (serverId) => {
@@ -1690,8 +1633,6 @@ const copyCmd = (serverId) => {
   currentServerName.value = server?.name || ''
   targetOs.value = 'linux'
   installMode.value = 'current-user'
-  installGhProxy.value = ''
-  installVersion.value = ''
   collectInterval.value = server?.collect_interval ?? 0
   reportInterval.value = server?.report_interval || 60
   wssReportInterval.value = server?.wss_report_interval || 2
@@ -1729,13 +1670,6 @@ const copyCmd = (serverId) => {
 }
 
 const hasCorrectionValue = (value) => value !== null && value !== undefined && value !== ''
-
-const buildGhRawUrl = (proxy, path) => {
-  const base = 'https://raw.githubusercontent.com'
-  if (!proxy) return `${base}${path}`
-  const cleanProxy = proxy.replace(/\/$/, '')
-  return `${cleanProxy}/${base}${path}`
-}
 
 const quotePosixShellArg = (value) => `'${String(value).replaceAll("'", `'"'"'`)}'`
 
@@ -1801,63 +1735,49 @@ const buildInstallAsCfsmCommand = (command, runStep) => {
 const getCustomInstallCommand = () => {
   const HOST = selectedApiBase.value
   const autoUpdateFlag = autoUpdate.value ? 1 : 0
-  const proxy = installGhProxy.value.trim()
-  const version = installVersion.value.trim()
-  const effectiveConnectionMode = getEffectiveConnectionMode(connectionMode.value)
   const isDedicatedUserInstall = targetOs.value === 'linux' && installMode.value === 'cfsm-user'
-  const effectivePingMode = getEffectivePingMode(isDedicatedUserInstall ? 'tcp' : pingMode.value)
+
   if (targetOs.value === 'windows') {
     const params = [
-      'install'
+      'install',
+      `-Id ${quotePowerShellArg(copyServerId.value)}`,
+      `-Secret ${quotePowerShellArg(apiSecret.value)}`,
+      `-Url ${quotePowerShellArg(`${HOST}/update`)}`,
+      `-CollectInterval ${quotePowerShellArg(String(collectInterval.value))}`,
+      `-ReportInterval ${quotePowerShellArg(String(reportInterval.value))}`,
+      `-ResetDay ${quotePowerShellArg(String(resetDay.value ?? 1))}`,
+      `-AutoUpdate ${quotePowerShellArg(String(autoUpdateFlag))}`
     ]
-    if (proxy) params.push(quotePowerShellArg(`--install-ghproxy=${proxy}`))
-    if (version) params.push(quotePowerShellArg(`--install-version=${version}`))
-    params.push(
-      `-id='${copyServerId.value}'`,
-      `-secret='${apiSecret.value}'`,
-      `-url='${HOST}/update'`,
-      `-collect_interval='${collectInterval.value}'`,
-      `-interval='${reportInterval.value}'`,
-      `-connection_mode='${effectiveConnectionMode}'`,
-      `-ping_mode='${effectivePingMode}'`,
-      `-reset_day='${resetDay.value ?? 1}'`,
-      `-auto_update='${autoUpdateFlag}'`
-    )
-    if (customCt.value || explicitEmptyNodes.value.custom_ct) params.push(`-ct='${customCt.value}'`)
-    if (customCu.value || explicitEmptyNodes.value.custom_cu) params.push(`-cu='${customCu.value}'`)
-    if (customCm.value || explicitEmptyNodes.value.custom_cm) params.push(`-cm='${customCm.value}'`)
-    if (customBd.value || explicitEmptyNodes.value.custom_bd) params.push(`-bd='${customBd.value}'`)
-    if (node1.value || explicitEmptyNodes.value.node_1) params.push(`-node_1='${node1.value}'`); if (node2.value || explicitEmptyNodes.value.node_2) params.push(`-node_2='${node2.value}'`); if (node3.value || explicitEmptyNodes.value.node_3) params.push(`-node_3='${node3.value}'`); if (node4.value || explicitEmptyNodes.value.node_4) params.push(`-node_4='${node4.value}'`)
-    if (networkInterface.value) params.push(`-interface='${networkInterface.value}'`)
-    if (hasCorrectionValue(rxCorrection.value)) params.push(`-rx_correction='${rxCorrection.value}'`)
-    if (hasCorrectionValue(txCorrection.value)) params.push(`-tx_correction='${txCorrection.value}'`)
-    const ghUrl = buildGhRawUrl(proxy, '/huilang-me/cfsm-agent/main/install.ps1')
-    return `$script = "$env:TEMP\\install-cf-probe.ps1"; Invoke-WebRequest -Uri ${quotePowerShellArg(ghUrl)} -OutFile $script -UseBasicParsing; PowerShell -ExecutionPolicy Bypass -File $script ${params.join(' ')}`
+    if (customCt.value || explicitEmptyNodes.value.custom_ct) params.push(`-CtNode ${quotePowerShellArg(customCt.value)}`)
+    if (customCu.value || explicitEmptyNodes.value.custom_cu) params.push(`-CuNode ${quotePowerShellArg(customCu.value)}`)
+    if (customCm.value || explicitEmptyNodes.value.custom_cm) params.push(`-CmNode ${quotePowerShellArg(customCm.value)}`)
+    if (customBd.value || explicitEmptyNodes.value.custom_bd) params.push(`-BdNode ${quotePowerShellArg(customBd.value)}`)
+    if (networkInterface.value) params.push(`-Interface ${quotePowerShellArg(networkInterface.value)}`)
+    if (hasCorrectionValue(rxCorrection.value)) params.push(`-RxCorrection ${quotePowerShellArg(rxCorrection.value)}`)
+    if (hasCorrectionValue(txCorrection.value)) params.push(`-TxCorrection ${quotePowerShellArg(txCorrection.value)}`)
+    const scriptUrl = quotePowerShellArg(`${HOST}/cf-server-monitor.ps1`)
+    return `$script = "$env:TEMP\\cf-server-monitor.ps1"; Invoke-WebRequest -Uri ${scriptUrl} -OutFile $script -UseBasicParsing; PowerShell -ExecutionPolicy Bypass -File $script ${params.join(' ')}`
   }
-  const params = ['install']
-  if (proxy) params.push(quotePosixShellArg(`--install-ghproxy=${proxy}`))
-  if (version) params.push(quotePosixShellArg(`--install-version=${version}`))
-  params.push(
+
+  const params = [
+    'install',
     `-id=${copyServerId.value}`,
-    `-secret='${apiSecret.value}'`,
+    `-secret=${quotePosixShellArg(apiSecret.value)}`,
     `-url=${HOST}/update`,
     `-collect_interval=${collectInterval.value}`,
     `-interval=${reportInterval.value}`,
-    `-connection_mode=${effectiveConnectionMode}`,
-    `-ping_mode=${effectivePingMode}`,
     `-reset_day=${resetDay.value ?? 1}`,
     `-auto_update=${autoUpdateFlag}`
-  )
-  if (customCt.value || explicitEmptyNodes.value.custom_ct) params.push(`-ct='${customCt.value}'`)
-  if (customCu.value || explicitEmptyNodes.value.custom_cu) params.push(`-cu='${customCu.value}'`)
-  if (customCm.value || explicitEmptyNodes.value.custom_cm) params.push(`-cm='${customCm.value}'`)
-  if (customBd.value || explicitEmptyNodes.value.custom_bd) params.push(`-bd='${customBd.value}'`)
-  if (node1.value || explicitEmptyNodes.value.node_1) params.push(`-node_1='${node1.value}'`); if (node2.value || explicitEmptyNodes.value.node_2) params.push(`-node_2='${node2.value}'`); if (node3.value || explicitEmptyNodes.value.node_3) params.push(`-node_3='${node3.value}'`); if (node4.value || explicitEmptyNodes.value.node_4) params.push(`-node_4='${node4.value}'`)
+  ]
+  if (customCt.value || explicitEmptyNodes.value.custom_ct) params.push(`-ct=${quotePosixShellArg(customCt.value)}`)
+  if (customCu.value || explicitEmptyNodes.value.custom_cu) params.push(`-cu=${quotePosixShellArg(customCu.value)}`)
+  if (customCm.value || explicitEmptyNodes.value.custom_cm) params.push(`-cm=${quotePosixShellArg(customCm.value)}`)
+  if (customBd.value || explicitEmptyNodes.value.custom_bd) params.push(`-bd=${quotePosixShellArg(customBd.value)}`)
   if (networkInterface.value) params.push(`-interface=${networkInterface.value}`)
   if (hasCorrectionValue(rxCorrection.value)) params.push(`-rx_correction=${rxCorrection.value}`)
   if (hasCorrectionValue(txCorrection.value)) params.push(`-tx_correction=${txCorrection.value}`)
-  const ghUrl = buildGhRawUrl(proxy, '/huilang-me/cfsm-agent/main/install.sh')
-  const installCommand = `curl -fsSL ${quotePosixShellArg(ghUrl)} | sh -s -- ${params.join(' ')}`
+  const installUrl = quotePosixShellArg(`${HOST}/install.sh`)
+  const installCommand = `curl -fsSL ${installUrl} | bash -s ${params.join(' ')}`
   if (!isDedicatedUserInstall) return installCommand
 
   return buildInstallAsCfsmCommand(installCommand, trans.value.nonRootInstallRunStep)
@@ -2111,9 +2031,7 @@ const openDeleteModal = (id) => {
   const server = servers.value.find(s => s.id === id)
   currentServerName.value = server?.name || ''
   deleteTargetOs.value = 'linux'
-  deleteVersion.value = 'go'
   deleteInstallMode.value = 'current-user'
-  deleteGhProxy.value = ''
   uninstallCopied.value = false
   showDeleteModal.value = true
 }
