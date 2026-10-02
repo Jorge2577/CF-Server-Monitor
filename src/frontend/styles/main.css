@@ -1753,6 +1753,12 @@ body::before {
     color: var(--accent-blue);
 }
 
+.server-card .stat-content:not(.stat-content-meter) .net-down,
+.server-card .stat-content:not(.stat-content-meter) .net-up,
+.server-card .stat-content:not(.stat-content-meter) .stat-limit {
+    color: var(--text-primary);
+}
+
 .stat-limit {
     color: var(--accent-yellow);
 }
