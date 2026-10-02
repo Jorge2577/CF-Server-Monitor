@@ -95,7 +95,7 @@
       <div class="stat-item">
         <div class="stat-label">{{ trans.servers }}</div>
         <div class="stat-main-value stat-main-value-sm stat-sub-info">
-          <span class="stat-online-color">{{ trans.online }}:{{ stats.online }}</span> |
+          <span>{{ trans.online }}:{{ stats.online }}</span> |
           <span class="stat-offline-color">{{ trans.offline }}:{{ stats.offline }}</span>
         </div>
       </div>
@@ -106,8 +106,8 @@
       <div class="stat-item">
         <div class="stat-label">{{ trans.realtimeSpeed }}</div>
         <div class="stat-main-value stat-main-value-sm">
-          <span class="stat-net-down-color">↓ {{ formatBytes(stats.globalSpeedIn) }}/s</span> |
-          <span class="stat-net-up-color">↑ {{ formatBytes(stats.globalSpeedOut) }}/s</span>
+          <span>↓ {{ formatBytes(stats.globalSpeedIn) }}/s</span> |
+          <span>↑ {{ formatBytes(stats.globalSpeedOut) }}/s</span>
         </div>
       </div>
       <div
