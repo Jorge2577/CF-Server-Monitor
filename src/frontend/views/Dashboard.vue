@@ -115,8 +115,10 @@
         class="stat-item stat-action-item"
         @click="financeModalOpen = true"
       >
-        <div class="stat-label">{{ trans.remainingValue }}</div>
+        <div class="stat-label">{{ trans.totalRemainingValue }}</div>
         <div class="stat-main-value stat-main-value-sm">
+          {{ formattedTotalValue.symbol }}{{ formattedTotalValue.value }}
+          <span class="finance-value-sep">/</span>
           {{ formattedRemainingValue.symbol }}{{ formattedRemainingValue.value }}
           <span class="finance-currency-code">{{ formattedRemainingValue.currency }}</span>
         </div>
