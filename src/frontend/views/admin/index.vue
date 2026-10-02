@@ -20,7 +20,11 @@
     />
 
     <div v-else class="container admin-container" id="admin-content">
-      <TerminalHeader :title="trans.adminPanel" />
+      <TerminalHeader :title="trans.adminPanel">
+        <template #after-title>
+          <button type="button" class="btn btn-red header-logout-btn" @click="logout">🚪 {{ trans.logout }}</button>
+        </template>
+      </TerminalHeader>
       <div v-if="adminSiteLoading" class="admin-loading-overlay">
         <div class="loading-content">
           <div class="loading-spinner"></div>
@@ -29,10 +33,7 @@
       </div>
 
       <div class="main-panel">
-        <div class="panel-header">
-          <div class="panel-title">
-            <span class="prompt">$</span> {{ trans.sudoStatus }}
-          </div>
+        <div class="panel-header admin-toolbar">
           <div class="header-actions">
             <button @click="refreshServers" class="btn" :disabled="adminSiteLoading">↻ {{ trans.refresh }}</button>
             <select
@@ -51,31 +52,8 @@
               </option>
             </select>
             <HelpTooltip v-if="isMultipleMode" :text="trans.apiEndpoint" />
-            <button @click="logout" class="btn btn-red">🚪 {{ trans.logout }}</button>
           </div>
         </div>
-
-        <div class="stats-grid" id="stats-panel">
-          <div class="stat-card">
-            <div class="stat-main-value" id="stat-total">{{ stats.total }}</div>
-            <div class="stat-label">{{ trans.totalServers }}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-main-value" id="stat-online">{{ stats.online }}</div>
-            <div class="stat-label">{{ trans.online }}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-main-value" id="stat-offline">{{ stats.offline }}</div>
-            <div class="stat-label">{{ trans.offline }}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-main-value" id="stat-avg-cpu">{{ stats.avg_cpu }}%</div>
-            <div class="stat-label">{{ trans.avgCpu }}</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="main-panel">
         <div class="tabs">
           <button
             class="tab-btn"
@@ -900,7 +878,6 @@ const adminSiteLoading = ref(false)
 const activeTab = ref('servers')
 const servers = ref([])
 const selectedServers = ref([])
-const stats = ref({ total: '-', online: 0, offline: 0, avg_cpu: 0 })
 const groups = ref(['Default'])
 const latestAgentVersion = ref('')
 const newServerName = ref('')
@@ -1631,7 +1608,6 @@ const loadServers = async () => {
     if (!result.error) {
       const data = result.data
       servers.value = data.servers || []
-      stats.value = data.stats || { total: servers.value.length, online: 0, offline: servers.value.length, avg_cpu: 0 }
 
       const serverGroups = [...new Set(servers.value.map(s => s.server_group || trans.value.default))]
       groups.value = serverGroups
