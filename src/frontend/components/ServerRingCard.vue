@@ -43,7 +43,6 @@
           <span class="metric-ring-progress"></span>
           <span class="metric-ring-center">{{ roundedPercent(cpuPercent) }}%</span>
         </div>
-        <div class="metric-ring-label">CPU</div>
         <div class="metric-ring-subtext">{{ cpuCores }} Cores</div>
       </div>
 
