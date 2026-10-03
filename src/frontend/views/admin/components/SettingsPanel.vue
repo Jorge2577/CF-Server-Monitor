@@ -34,7 +34,7 @@
               <option value="auto">{{ trans.themeAuto }}</option>
               <option value="dark">{{ trans.themeDark }}</option>
               <option value="light">{{ trans.themeLight }}</option>
-              <option value="grid">{{ trans.themeGrid }}</option>
+              <option value="grid">{{ gridThemeLabel }}</option>
             </select>
           </div>
 
@@ -878,6 +878,10 @@ const props = defineProps({
   testNotificationLoading: { type: Boolean, default: false },
   d1UsageLoading: { type: Boolean, default: false },
   githubBindingLoading: { type: Boolean, default: false }
+})
+
+const gridThemeLabel = computed(() => {
+  return props.trans.themeGrid || (currentLang.value === 'zh' ? '格子' : 'Grid')
 })
 
 const githubCallbackUrl = computed(() => {
