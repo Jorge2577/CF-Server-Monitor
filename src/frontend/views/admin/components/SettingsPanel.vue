@@ -34,6 +34,7 @@
               <option value="auto">{{ trans.themeAuto }}</option>
               <option value="dark">{{ trans.themeDark }}</option>
               <option value="light">{{ trans.themeLight }}</option>
+              <option value="grid">{{ trans.themeGrid }}</option>
             </select>
           </div>
 
