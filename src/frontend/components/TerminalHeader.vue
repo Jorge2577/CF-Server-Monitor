@@ -18,31 +18,17 @@
       </div>
       <div class="theme-toggle-wrapper">
         <div class="theme-toggle">
-          <button 
-            class="theme-btn" 
-            :class="{ active: currentTheme === 'auto' }"
-            @click="setTheme('auto')"
-            aria-label="Auto - Follow System"
-          ><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor"><rect width="20" height="14" x="2" y="3" rx="2"></rect><line x1="8" x2="16" y1="21" y2="21"></line><line x1="12" x2="12" y1="17" y2="21"></line></svg></button>
           <button
-            class="theme-btn"
-            :class="{ active: currentTheme === 'grid' }"
-            @click="setTheme('grid')"
-            :aria-label="trans.themeGrid"
-            :title="trans.themeGrid"
-          ><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-grid-2x2"><rect width="7" height="7" x="3" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="3" rx="1"></rect><rect width="7" height="7" x="3" y="14" rx="1"></rect><rect width="7" height="7" x="14" y="14" rx="1"></rect></svg></button>
-          <button 
-            class="theme-btn" 
-            :class="{ active: currentTheme === 'dark' }"
-            @click="setTheme('dark')"
-            aria-label="Dark Mode"
-          ><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg></button>
-          <button 
-            class="theme-btn" 
-            :class="{ active: currentTheme === 'light' }"
-            @click="setTheme('light')"
-            aria-label="Light Mode"
-          ><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg></button>
+            class="theme-btn active"
+            @click="toggleTheme"
+            :aria-label="themeButtonLabel"
+            :title="themeButtonLabel"
+          >
+            <svg v-if="currentTheme === 'auto'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor"><rect width="20" height="14" x="2" y="3" rx="2"></rect><line x1="8" x2="16" y1="21" y2="21"></line><line x1="12" x2="12" y1="17" y2="21"></line></svg>
+            <svg v-else-if="currentTheme === 'grid'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-grid-2x2"><rect width="7" height="7" x="3" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="3" rx="1"></rect><rect width="7" height="7" x="3" y="14" rx="1"></rect><rect width="7" height="7" x="14" y="14" rx="1"></rect></svg>
+            <svg v-else-if="currentTheme === 'dark'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+          </button>
         </div>
       </div>
       <select
@@ -89,13 +75,23 @@ const props = defineProps({
   }
 })
 
-const { currentTheme, setTheme } = useTheme()
+const { currentTheme, toggleTheme } = useTheme()
 const trans = useTranslation()
 const { currentView, switchView } = useDashboardView()
 const currentLang = ref('en')
 const route = useRoute()
 const isAdminPage = ref(route.path === '/admin')
 const adminHref = computed(() => hasConfiguredApiBase() ? '/#/admin' : '/admin#/admin')
+const currentThemeLabel = computed(() => {
+  const labels = {
+    auto: trans.value.themeAuto,
+    grid: trans.value.themeGrid,
+    dark: trans.value.themeDark,
+    light: trans.value.themeLight
+  }
+  return labels[currentTheme.value] || trans.value.themeAuto
+})
+const themeButtonLabel = computed(() => `${trans.value.appearance}: ${currentThemeLabel.value}`)
 const customLogoFailed = ref(false)
 const brandLogoUrl = computed(() => {
   const customLogo = String(props.logo || '').trim()
