@@ -128,7 +128,7 @@ async function fetchConfig() {
     const siteTitle = data.site_title || ''
     const siteSubtitle = data.site_subtitle || ''
     const displayMode = resolveDisplayMode(data)
-    const preferredTheme = ['dark', 'light', 'auto'].includes(String(data.preferred_theme || '').toLowerCase()) ? String(data.preferred_theme).toLowerCase() : 'auto'
+    const preferredTheme = ['dark', 'light', 'grid', 'auto'].includes(String(data.preferred_theme || '').toLowerCase()) ? String(data.preferred_theme).toLowerCase() : 'auto'
     const defaultLanguage = ['zh', 'en', 'auto'].includes(String(data.default_language || '').toLowerCase()) ? String(data.default_language).toLowerCase() : 'auto'
     const themeOptions = normalizeThemeOptions(data.theme_options)
     const frontendWsTimeoutMinutes = normalizeLiveSocketTimeoutMinutes(data.frontend_ws_timeout_minutes)
@@ -350,7 +350,7 @@ async function initApp() {
         site_title: first.data.site_title || '',
         site_subtitle: first.data.site_subtitle || '',
         display_mode: resolveDisplayMode(first.data),
-        preferred_theme: ['dark', 'light', 'auto'].includes(String(first.data.preferred_theme || '').toLowerCase()) ? String(first.data.preferred_theme).toLowerCase() : 'auto',
+        preferred_theme: ['dark', 'light', 'grid', 'auto'].includes(String(first.data.preferred_theme || '').toLowerCase()) ? String(first.data.preferred_theme).toLowerCase() : 'auto',
         default_language: ['zh', 'en', 'auto'].includes(String(first.data.default_language || '').toLowerCase()) ? String(first.data.default_language).toLowerCase() : 'auto',
         frontend_ws_timeout_minutes: normalizeLiveSocketTimeoutMinutes(first.data.frontend_ws_timeout_minutes),
         theme_options: normalizeThemeOptions(first.data.theme_options)
