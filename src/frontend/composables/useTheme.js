@@ -83,7 +83,7 @@ export const useTheme = () => {
   };
 
   const toggleTheme = () => {
-    const themes = ["dark", "light", "grid", "auto"];
+    const themes = ["auto", "grid", "dark", "light"];
     const currentIndex = themes.indexOf(currentTheme.value);
     const nextIndex = (currentIndex + 1) % themes.length;
     setTheme(themes[nextIndex]);
