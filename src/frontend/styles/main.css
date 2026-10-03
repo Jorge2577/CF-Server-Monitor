@@ -108,6 +108,18 @@ body::before {
     position: relative;
 }
 
+.container.dashboard-page {
+    min-height: 100vh;
+    padding-top: 0;
+    padding-bottom: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-page > .footer {
+    margin-top: auto;
+}
+
 .footer {
     margin-top: 20px;
     padding: 10px 16px;
