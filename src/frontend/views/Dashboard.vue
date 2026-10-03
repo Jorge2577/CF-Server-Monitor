@@ -31,8 +31,9 @@
             :key="item.code"
             type="button"
             class="filter-tag"
-            :class="{ active: currentFilter === item.code, 'filter-tag-unknown': item.code === 'unknown' }"
+            :class="{ active: currentFilter === item.code, 'filter-tag-unknown': item.code === 'unknown', 'filter-tag-group': item.isGroup }"
             :data-filter="item.code"
+            :title="item.label"
             @click="setFilter(item.code)"
           >
             <span v-if="item.code === 'unknown'" class="filter-tag-icon">🏳️</span>
@@ -56,8 +57,9 @@
                 :key="item.code"
                 type="button"
                 class="filter-tag filter-more-item"
-                :class="{ active: currentFilter === item.code, 'filter-tag-unknown': item.code === 'unknown' }"
+                :class="{ active: currentFilter === item.code, 'filter-tag-unknown': item.code === 'unknown', 'filter-tag-group': item.isGroup }"
                 :data-filter="item.code"
+                :title="item.label"
                 @click="setFilter(item.code)"
               >
                 <span v-if="item.code === 'unknown'" class="filter-tag-icon">🏳️</span>
@@ -74,6 +76,7 @@
             :key="item.code"
             type="button"
             class="filter-tag filter-measure-tag"
+            :class="{ 'filter-tag-group': item.isGroup }"
           >
             <span v-if="item.code === 'unknown'" class="filter-tag-icon">🏳️</span>
             <img v-else-if="item.flagCode" :src="getPublicAssetUrl('flags/' + item.flagCode + '.svg')" :alt="item.code">
@@ -126,24 +129,19 @@
     </div>
 
     <div id="view-card" class="view-panel" :class="{ active: isCardView, 'high-density': filteredServers.length > 12 }">
-      <div v-if="groupedServers.length === 0" class="empty-state">
+      <div v-if="filteredServers.length === 0" class="empty-state">
         [!] {{ trans.noServer }}，请在 <a href="/admin#admin" class="admin-link-color">{{ trans.backToAdmin }}</a> 中添加
       </div>
       <div v-else>
-        <div v-for="group in groupedServers" :key="group.name" class="group-section">
-          <div class="group-header" :data-group="group.name">
-            <span class="prompt-sign">#</span> {{ group.name }} <span class="group-count">[{{ group.servers.length }}]</span>
-          </div>
-          <div class="servers-grid">
-            <component
-              :is="currentCardComponent"
-              v-for="server in group.servers"
-              :key="server.id + '-' + currentView"
-              :server="server"
-              :sys-config="sysConfig"
-              :to="getServerLink(server)"
-            />
-          </div>
+        <div class="servers-grid">
+          <component
+            :is="currentCardComponent"
+            v-for="server in filteredServers"
+            :key="server.id + '-' + currentView"
+            :server="server"
+            :sys-config="sysConfig"
+            :to="getServerLink(server)"
+          />
         </div>
       </div>
     </div>
@@ -490,6 +488,28 @@ const loadFinanceRates = async () => {
   }
 }
 
+const GROUP_FILTER_PREFIX = 'group:'
+
+const getGroupFilterCode = (groupName) => `${GROUP_FILTER_PREFIX}${encodeURIComponent(groupName)}`
+const getGroupNameFromFilter = (code) => decodeURIComponent(code.slice(GROUP_FILTER_PREFIX.length))
+
+// /api/servers already returns servers ordered by the admin sort order.
+const orderedServers = computed(() => servers.value)
+
+const groupStats = computed(() => {
+  const groups = new Map()
+  orderedServers.value.forEach(server => {
+    const name = String(server.server_group || 'Default').trim() || 'Default'
+    const entry = groups.get(name)
+    if (entry) {
+      entry.count += 1
+    } else {
+      groups.set(name, { name, count: 1 })
+    }
+  })
+  return [...groups.values()]
+})
+
 const filterOptions = computed(() => {
   const normalizedStats = {}
   for (const code in regionStats.value) {
@@ -506,8 +526,11 @@ const filterOptions = computed(() => {
   const opts = {
     all: stats.value.total,
     offline: stats.value.offline,
-    ...sortedRegionStats
   }
+  groupStats.value.forEach(group => {
+    opts[getGroupFilterCode(group.name)] = group.count
+  })
+  Object.assign(opts, sortedRegionStats)
   if (unknownStats.value > 0) opts.unknown = unknownStats.value
   return opts
 })
@@ -516,6 +539,7 @@ const getFilterLabel = (code) => {
   if (code === 'all') return currentLang.value === 'zh' ? '全部' : 'ALL'
   if (code === 'offline') return currentLang.value === 'zh' ? '离线' : 'OFF'
   if (code === 'unknown') return '?'
+  if (code.startsWith(GROUP_FILTER_PREFIX)) return getGroupNameFromFilter(code)
   return code.toUpperCase()
 }
 
@@ -523,7 +547,8 @@ const filterOptionEntries = computed(() => Object.entries(filterOptions.value).m
   code,
   count,
   label: getFilterLabel(code),
-  flagCode: code !== 'all' && code !== 'offline' && code !== 'unknown' ? getFlagRegionCode(code) : ''
+  isGroup: code.startsWith(GROUP_FILTER_PREFIX),
+  flagCode: code !== 'all' && code !== 'offline' && code !== 'unknown' && !code.startsWith(GROUP_FILTER_PREFIX) ? getFlagRegionCode(code) : ''
 })))
 
 const filterMoreLabel = computed(() => currentLang.value === 'zh' ? '更多' : 'MORE')
@@ -617,24 +642,15 @@ watch(
 watch(filterMoreLabel, scheduleFilterMeasurement, { flush: 'post' })
 
 const filteredServers = computed(() => {
-  if (currentFilter.value === 'all') return servers.value
-  if (currentFilter.value === 'offline') return servers.value.filter(server => !isServerOnline(server))
-  if (currentFilter.value === 'unknown') return servers.value.filter(s => !s.region)
-  return servers.value.filter(s => (s.region || 'xx').toLowerCase() === currentFilter.value)
-})
-
-const groupedServers = computed(() => {
-  const groups = {}
-  const order = []
-  filteredServers.value.forEach(server => {
-    const groupName = server.server_group || 'Default'
-    if (!groups[groupName]) {
-      groups[groupName] = []
-      order.push(groupName)
-    }
-    groups[groupName].push(server)
-  })
-  return order.map(name => ({ name, servers: groups[name] }))
+  const filter = currentFilter.value
+  if (filter === 'all') return orderedServers.value
+  if (filter === 'offline') return orderedServers.value.filter(server => !isServerOnline(server))
+  if (filter === 'unknown') return orderedServers.value.filter(server => !server.region)
+  if (filter.startsWith(GROUP_FILTER_PREFIX)) {
+    const groupName = getGroupNameFromFilter(filter)
+    return orderedServers.value.filter(server => (String(server.server_group || 'Default').trim() || 'Default') === groupName)
+  }
+  return orderedServers.value.filter(server => (server.region || 'xx').toLowerCase() === filter)
 })
 
 const isCardView = computed(() => currentView.value === 'bar' || currentView.value === 'ring')
@@ -655,7 +671,8 @@ const switchView = (viewName) => {
 }
 
 const setFilter = (code) => {
-  const nextFilter = code.toLowerCase()
+  const value = String(code || '')
+  const nextFilter = value.startsWith(GROUP_FILTER_PREFIX) ? value : value.toLowerCase()
   currentFilter.value = currentFilter.value === nextFilter ? 'all' : nextFilter
   filterMoreOpen.value = false
 }
