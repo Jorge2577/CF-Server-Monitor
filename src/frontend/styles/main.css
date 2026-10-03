@@ -797,6 +797,12 @@ body::before {
     min-width: 0;
 }
 
+.filter-tag-group .filter-tag-label {
+    max-width: min(180px, 36vw);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .filter-tag-unknown {
     border-style: dashed;
     opacity: 0.85;
