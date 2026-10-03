@@ -780,7 +780,7 @@ const isPlainObject = (value) => value !== null && typeof value === 'object' && 
 
 const normalizePreferredThemeSetting = (value) => {
   const theme = String(value || '').trim().toLowerCase()
-  return ['dark', 'light', 'auto'].includes(theme) ? theme : 'auto'
+  return ['dark', 'light', 'grid', 'auto'].includes(theme) ? theme : 'auto'
 }
 
 const normalizeDefaultLanguageSetting = (value) => {
