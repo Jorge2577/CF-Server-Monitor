@@ -473,8 +473,8 @@ export function normalizeDisplayMode(value, fallback = 'bar') {
 
 export function normalizePreferredTheme(value, fallback = 'auto') {
   const theme = String(value || '').trim().toLowerCase();
-  if (theme === 'dark' || theme === 'light' || theme === 'auto') return theme;
-  return fallback === 'dark' || fallback === 'light' ? fallback : 'auto';
+  if (theme === 'dark' || theme === 'light' || theme === 'grid' || theme === 'auto') return theme;
+  return fallback === 'dark' || fallback === 'light' || fallback === 'grid' || fallback === 'auto' ? fallback : 'auto';
 }
 
 export function normalizeDefaultLanguage(value, fallback = 'auto') {
