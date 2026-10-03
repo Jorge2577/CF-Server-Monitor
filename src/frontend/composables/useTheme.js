@@ -6,12 +6,14 @@ const themeChangeCallbacks = [];
 const currentTheme = ref("auto");
 let defaultTheme = "auto";
 
+const isSupportedTheme = (theme) => ["dark", "light", "grid", "auto"].includes(theme)
+
 const normalizeTheme = (theme, fallback = "auto") => {
   const value = String(theme || "").trim().toLowerCase();
-  if (value === "dark" || value === "light" || value === "auto") {
+  if (isSupportedTheme(value)) {
     return value;
   }
-  return fallback === "dark" || fallback === "light" ? fallback : "auto";
+  return isSupportedTheme(fallback) ? fallback : "auto";
 };
 
 // 跟随系统明暗偏好:浏览器/系统为暗色时返回 dark,否则返回 light
@@ -33,8 +35,10 @@ const resolveTheme = (theme) => {
 
 const applyTheme = (theme) => {
   const resolved = resolveTheme(theme);
-  document.body.classList.remove("dark", "light");
-  if (resolved !== "dark") {
+  document.body.classList.remove("dark", "light", "grid");
+  if (resolved === "grid") {
+    document.body.classList.add("grid");
+  } else if (resolved !== "dark") {
     document.body.classList.add(resolved);
   }
   themeChangeCallbacks.forEach((cb) => cb(resolved));
@@ -79,7 +83,7 @@ export const useTheme = () => {
   };
 
   const toggleTheme = () => {
-    const themes = ["dark", "light", "auto"];
+    const themes = ["dark", "light", "grid", "auto"];
     const currentIndex = themes.indexOf(currentTheme.value);
     const nextIndex = (currentIndex + 1) % themes.length;
     setTheme(themes[nextIndex]);
