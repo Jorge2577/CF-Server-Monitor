@@ -64,7 +64,7 @@
             <span v-if="hasSwapData" class="metric-ring-center-swap">{{ roundedPercent(swapPercent) }}%</span>
           </span>
         </div>
-        <div class="metric-ring-label">RAM</div>
+        <div class="metric-ring-label">{{ trans.ringRam }}</div>
         <div class="metric-ring-subtext">{{ ramUsageText }}</div>
       </div>
 
@@ -74,7 +74,7 @@
           <span class="metric-ring-progress"></span>
           <span class="metric-ring-center">{{ roundedPercent(diskPercent) }}%</span>
         </div>
-        <div class="metric-ring-label">Disk</div>
+        <div class="metric-ring-label">{{ trans.ringDisk }}</div>
         <div class="metric-ring-subtext">{{ diskUsageText }}</div>
       </div>
     </div>
