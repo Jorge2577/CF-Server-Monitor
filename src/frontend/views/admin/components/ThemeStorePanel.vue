@@ -68,7 +68,7 @@
       <div class="theme-grid">
         <div class="theme-card" :class="{ active: isMikusThemeActive }">
           <div class="theme-cover-wrap theme-cover-wrap-mikus">
-            <img src="/mikus/loli.gif" alt="Mikus" class="theme-cover theme-cover-mikus" />
+            <img src="./mikus.jpeg" alt="Mikus" class="theme-cover" />
           </div>
           <div class="theme-info">
             <div class="theme-header">
