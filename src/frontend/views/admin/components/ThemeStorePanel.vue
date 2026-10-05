@@ -78,7 +78,7 @@
               <span v-for="tag in mikusThemeTags" :key="tag" class="theme-tag">{{ tag }}</span>
             </div>
             <p class="theme-desc">{{ mikusThemeDescription }}</p>
-            <div class="theme-author">by mikus-loli</div>
+            <div class="theme-author">by ws01 修改</div>
             <div class="theme-space"></div>
             <div class="theme-actions">
               <button
@@ -93,7 +93,7 @@
                 :class="{ 'btn-primary': applyingThemeId !== '__mikus_disable__' && isMikusThemeActive }"
                 :disabled="applyingThemeId === '__mikus_disable__' || !isMikusThemeActive"
               >✕ {{ applyingThemeId === '__mikus_disable__' ? trans.saving : trans.close }}</button>
-              <a href="https://github.com/mikus-loli/komari-mikus" target="_blank" rel="noopener noreferrer" class="btn btn-sm">↗ {{ trans.view }}</a>
+              <a href="https://github.com/Jorge2577/CF-Server-Monitor" target="_blank" rel="noopener noreferrer" class="btn btn-sm">↗ {{ trans.view }}</a>
             </div>
           </div>
         </div>
