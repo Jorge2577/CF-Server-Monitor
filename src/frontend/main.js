@@ -54,7 +54,7 @@ const renderMikusStartupLoading = (siteTitle) => {
       <div class="mikus-startup-progress" aria-hidden="true">
         <div class="mikus-startup-progress-fill"></div>
       </div>
-      <div class="mikus-startup-status">$ Initializing...</div>
+      <div class="mikus-startup-status">Loading...</div>
     </div>
   `
 }
