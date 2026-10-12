@@ -99,7 +99,7 @@
         <div class="stat-label">{{ trans.servers }}</div>
         <div class="stat-main-value stat-main-value-sm stat-sub-info">
           <span>{{ trans.online }}:{{ stats.online }}</span> |
-          <span class="stat-offline-color">{{ trans.offline }}:{{ stats.offline }}</span>
+          <span>{{ trans.offline }}:<span :class="{ 'stat-offline-color': Number(stats.offline) > 0 }">{{ stats.offline }}</span></span>
         </div>
       </div>
       <div class="stat-item">
