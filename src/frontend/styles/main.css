@@ -1161,6 +1161,11 @@ body::before {
     isolation: isolate;
 }
 
+.server-card > * {
+    position: relative;
+    z-index: 1;
+}
+
 .server-card::before,
 .server-card::after {
     content: "";
@@ -1170,7 +1175,7 @@ body::before {
     width: 28%;
     pointer-events: none;
     opacity: 0;
-    z-index: 2;
+    z-index: 3;
     background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.18) 28%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0.18) 72%, rgba(255,255,255,0) 100%);
     transform: translateX(-160%) skewX(-22deg);
     filter: blur(0.2px);
