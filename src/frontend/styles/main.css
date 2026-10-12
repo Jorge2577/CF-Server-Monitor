@@ -2165,10 +2165,6 @@ body::before {
     transition: none;
 }
 
-.view-panel.high-density .server-card::before,
-.view-panel.high-density .server-card::after {
-    animation: none !important;
-}
 
 .group-section {
     margin-bottom: 24px;
